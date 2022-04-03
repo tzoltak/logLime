@@ -18,19 +18,22 @@ separate_logdata_types(
 
 \item{surveyStructure}{optionally either a name (or vector of names) of a
 \emph{LimeSurvey} survey structure file exported in the text (.txt) format or
-data frame with such a file already read, or list of data frames with such
+a data frame with such a file already read, or list of data frames with such
 files already read}
 
-\item{respId}{<tidy-select> name(s) of the column(s) containing respondent's
-id (and perhaps other variables you want to keep joined with your log-data)}
+\item{respId}{optionally (default value covers typical structure of
+survey results exported from the \emph{LimeSurvey}) <tidy-select> name(s)
+of the column(s) containing respondent's id (and perhaps other variables you
+want to keep joined with your log-data)}
 
-\item{questionNamesTo}{string - name of the variable that will identify
-survey screen (page) in the results (i.e. one storing names of variables
-storing log-data streams in the provided data)}
+\item{questionNamesTo}{optionally a string - name of a variable that will
+identify (describe) survey screen (page) in the results}
 }
 \value{
-list of three data frames with elements named \emph{systemInfo},
-\emph{inputPositions} and  \emph{actions}
+List of three data frames with elements named \emph{systemInfo},
+\emph{inputPositions} and  \emph{actions}. Some more information on how these
+data frames are constructed you may find in the documentation regarding
+functions listed below in the \emph{See also} section.
 }
 \description{
 Function separates raw log-data streams into three separate data

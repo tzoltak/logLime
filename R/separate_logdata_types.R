@@ -20,15 +20,18 @@
 #' \emph{logDataLimeSurvey} applet stored in its columns
 #' @param surveyStructure optionally either a name (or vector of names) of a
 #' \emph{LimeSurvey} survey structure file exported in the text (.txt) format or
-#' data frame with such a file already read, or list of data frames with such
+#' a data frame with such a file already read, or list of data frames with such
 #' files already read
-#' @param respId <tidy-select> name(s) of the column(s) containing respondent's
-#' id (and perhaps other variables you want to keep joined with your log-data)
-#' @param questionNamesTo string - name of the variable that will identify
-#' survey screen (page) in the results (i.e. one storing names of variables
-#' storing log-data streams in the provided data)
-#' @return list of three data frames with elements named \emph{systemInfo},
-#' \emph{inputPositions} and  \emph{actions}
+#' @param respId optionally (default value covers typical structure of
+#' survey results exported from the \emph{LimeSurvey}) <tidy-select> name(s)
+#' of the column(s) containing respondent's id (and perhaps other variables you
+#' want to keep joined with your log-data)
+#' @param questionNamesTo optionally a string - name of a variable that will
+#' identify (describe) survey screen (page) in the results
+#' @return List of three data frames with elements named \emph{systemInfo},
+#' \emph{inputPositions} and  \emph{actions}. Some more information on how these
+#' data frames are constructed you may find in the documentation regarding
+#' functions listed below in the \emph{See also} section.
 #' @seealso \code{\link{read_survey_structure}}
 #' \code{\link{logstreams_to_data_frame}}
 #' \code{\link{preprocess_input_positions}} \code{\link{preprocess_system_info}}
