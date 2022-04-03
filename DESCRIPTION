@@ -1,0 +1,25 @@
+Package: logDataLimeSurveyR
+Type: Package
+Title: Creating process indicators from logs created by logDataLimeSurvey JS applet
+Version: 0.0.9000
+Authors@R: c(person("Tomasz", "Zoltak",
+                    email = "tomek@zozlak.org",
+                    role = c("aut", "cre"),
+                    comment = c(ORCID = "0000-0003-1354-4472")))
+Maintainer: Tomasz Zoltak <tomek@zozlak.org>
+Description: Package allows to transform raw data created by the
+    logDataLimeSurvey JavaScript applet (see
+    https://github.com/tzoltak/logdataLimeSurvey) and exported from the
+    LimeSurvey web-survey platform to a more analytically useful form.
+License: MIT + file LICENSE
+Depends: R (>= 4.0.0)
+Imports:
+    tidyr (>= 1.0.0),
+    dplyr (>= 1.0.2)
+Suggests:
+    testthat,
+    covr
+Encoding: UTF-8
+Language: en-US
+RoxygenNote: 7.1.2
+Config/testthat/edition: 3
