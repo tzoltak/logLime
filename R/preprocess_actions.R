@@ -59,21 +59,25 @@
 #' @importFrom dplyr %>% .data arrange bind_rows case_when cur_data everything
 #' filter group_by if_else lag mutate n ungroup
 preprocess_actions <- function(logData, respScreenIds, surveyStructure = NULL) {
-  logData <- logData %>%
-    filter(!(.data$type %in% c("browser", "screen", "input_position"))) %>%
-    mutate(across(c(.data$target.tagName, .data$target.id, .data$target.class,
-                    .data$which, .data$metaKey, .data$pageX, .data$pageY),
-                  ~if_else(. == "undefined", NA_character_, .)),
-           across(c(.data$timeStamp, .data$which, .data$pageX, .data$pageY),
-                  as.numeric),
-           metaKey = as.numeric(as.logical(.data$metaKey))) %>%
-    mutate(rowPosition = 1:n()) %>%
-    group_by(across({{respScreenIds}})) %>%
-    mutate(timeStampRel = .data$timeStamp -
-             c(.data$timeStamp[.data$type %in% "pageLoaded"],
-               .data$timeStamp[1])[1]) %>%
-    select({{respScreenIds}}, .data$timeStamp, .data$timeStampRel, everything()) %>%
-    ungroup()
+  # there will be probably some warnings in conversion to numerics because of
+  # a cut "undefined" in some broken records - that's why suppressWarnings()
+  logData <- suppressWarnings(
+    logData %>%
+      filter(!(.data$type %in% c("browser", "screen", "input_position"))) %>%
+      mutate(across(c(.data$target.tagName, .data$target.id, .data$target.class,
+                      .data$which, .data$metaKey, .data$pageX, .data$pageY),
+                    ~if_else(. == "undefined", NA_character_, .)),
+             across(c(.data$timeStamp, .data$which, .data$pageX, .data$pageY),
+                    as.numeric),
+             metaKey = as.numeric(as.logical(.data$metaKey))) %>%
+      mutate(rowPosition = 1:n()) %>%
+      group_by(across({{respScreenIds}})) %>%
+      mutate(timeStampRel = .data$timeStamp -
+               c(.data$timeStamp[.data$type %in% "pageLoaded"],
+                 .data$timeStamp[1])[1]) %>%
+      select({{respScreenIds}}, .data$timeStamp, .data$timeStampRel, everything()) %>%
+      ungroup()
+  )
   message("\nComputing scroll lengths...")
   logData <- compute_scrolls(logData, respScreenIds)
   message("Transforming mousemove events into actual moves...")
