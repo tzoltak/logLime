@@ -5,9 +5,9 @@
 Currently package is not submitted to CRAN. Nevertheless you can easily install it using the *remotes* package:
 
 1.  First you need to install the *remotes* package, **if you don't have it already**:  
-    `r install.packages('devtools')`
+    `r install.packages('remotes')`
 
-2.  Next you can install *logDataLimeSurveyR*: `devtools::install_github('tzoltak/logDataLimeSurveyR')`
+2.  Next you can install *logDataLimeSurveyR*: `remotes::install_github('tzoltak/logDataLimeSurveyR')`
 
 ## Usage
 
