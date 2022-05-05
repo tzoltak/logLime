@@ -103,7 +103,7 @@ compute_cursor_indices <- function(actions,
     filter(!is.na(.data$duration)) %>%
     summarise(across(any_of(c("dX", "dX_sc", "dX_rel", "dX_screl",
                               "dY", "dY_sc", "dY_rel", "dY_screl",
-                              "flipsX", "flipsX_sc", "flipsy", "flipsY_sc")),
+                              "flipsX", "flipsX_sc", "flipsY", "flipsY_sc")),
                      sum, na.rm = TRUE),
               across(any_of(c("vX", "aX", "vX_sc", "aX_sc",
                               "vY", "aY", "vY_sc", "aY_sc",
