@@ -1,7 +1,7 @@
 Package: logDataLimeSurveyR
 Type: Package
 Title: Creating process indicators from logs created by logDataLimeSurvey JS applet
-Version: 0.0.9000
+Version: 0.0.9001
 Authors@R: c(person("Tomasz", "Zoltak",
                     email = "tomek@zozlak.org",
                     role = c("aut", "cre"),

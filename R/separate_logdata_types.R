@@ -36,6 +36,7 @@
 #' \code{\link{logstreams_to_data_frame}}
 #' \code{\link{preprocess_input_positions}} \code{\link{preprocess_system_info}}
 #' \code{\link{find_problems}} \code{\link{preprocess_actions}}
+#' \code{\link{separate_stagnations}}
 #' @importFrom tidyr pivot_longer
 #' @importFrom dplyr %>% .data across all_of distinct filter first group_by
 #' last left_join mutate select ungroup

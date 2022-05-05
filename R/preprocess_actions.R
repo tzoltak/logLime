@@ -137,8 +137,8 @@ compute_mouse_moves <- function(actions, respScreenIds) {
               filter(.data$type %in% c("mousemove", "pageLoaded")) %>%
               group_by(across({{respScreenIds}})) %>%
               mutate(duration = .data$timeStamp - lag(.data$timeStamp),
-                     moveX = .data$pageX - lag(.data$pageX),
-                     moveY = .data$pageY - lag(.data$pageY),
+                     moveX = .data$pageX - lag(.data$pageX, default = 0),
+                     moveY = .data$pageY - lag(.data$pageY, default = 0),
                      moveXScrollCorrected = .data$moveX,
                      moveYScrollCorrected = .data$moveY) %>%
               bind_rows(actions %>%

@@ -96,7 +96,7 @@ page. However, there are some limitations:
   \item{\strong{If there is only one answer or subquestion, position on
         a respective dimension can not be corrected (because of the lack of
         data) and it is therefore left unchanged.}}
-  \item{AT the moment \strong{no corrections are made for an array
+  \item{At the moment \strong{no corrections are made for an array
         dual-scale questions}.}
 }
 }
