@@ -97,7 +97,7 @@ construct_ids <- function(x) {
   answers <- x %>%
     filter(class %in% "A") %>%
     mutate(SGQA = paste0(.data$surveyId, "X", .data$groupId, "X",
-                         .data$questionId, .data$name)) %>%
+                         .data$id, .data$name)) %>%
     select(answerCode = .data$name, .data$questionFormat, .data$SGQA,
            .data$surveyId, .data$questionId) %>%
     left_join(questions %>%
@@ -112,12 +112,13 @@ construct_ids <- function(x) {
                   answerCode = x$name[x$class %in% "A"]) %>%
         mutate(surveyId = x$surveyId[1],
                groupId = x$groupId[1],
-               questionId = x$questionId[1]) %>%
+               questionId = x$questionId[1],
+               questionIdToSGQA = x$id[x$class %in% "A"][1]) %>%
         return()
     }) %>%
     bind_rows() %>%
     mutate(SGQA = paste0(.data$surveyId, "X", .data$groupId, "X",
-                         .data$questionId, .data$subquestionCode, "-",
+                         .data$questionIdToSGQA, .data$subquestionCode, "-",
                          .data$answerCode)) %>%
     select(.data$subquestionCode, .data$answerCode, .data$SGQA, .data$surveyId,
            .data$questionId) %>%
