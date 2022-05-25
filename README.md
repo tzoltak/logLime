@@ -1,4 +1,4 @@
-# logDataLimeSurveyR
+# logLime
 
 ## Installation/update
 
@@ -7,7 +7,7 @@ Currently package is not submitted to CRAN. Nevertheless you can easily install 
 1.  First you need to install the *remotes* package, **if you don't have it already**:  
     `r install.packages('remotes')`
 
-2.  Next you can install *logDataLimeSurveyR*: `remotes::install_github('tzoltak/logDataLimeSurveyR')`
+2.  Next you can install *logLime*: `remotes::install_github('tzoltak/logLime')`
 
 ## Usage
 

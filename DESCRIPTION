@@ -1,4 +1,4 @@
-Package: logDataLimeSurveyR
+Package: logLime
 Type: Package
 Title: Creating process indicators from logs created by logDataLimeSurvey JS applet
 Version: 0.0.9100
