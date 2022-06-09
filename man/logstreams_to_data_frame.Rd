@@ -3,34 +3,42 @@
 \name{logstreams_to_data_frame}
 \alias{logstreams_to_data_frame}
 \title{Transforming a data frame with log-data streams to a data frame in
-a long form}
+a long format}
 \usage{
-logstreams_to_data_frame(logData, respId, questionNamesTo)
+logstreams_to_data_frame(logData, respId, questionNamesTo, questionNamesPrefix)
 }
 \arguments{
-\item{logData}{data frame with log-data streams recorded by the
-\emph{logDataLimeSurvey} applet stored in its columns}
+\item{logData}{A data frame with log-data streams recorded by the
+\emph{logDataLimeSurvey} applet stored in its columns.}
 
-\item{respId}{<tidy-select> name(s) of the column(s) containing respondent's
-id (and perhaps other variables you want to keep joined with your log-data)}
+\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying respondent. (You may also list additional variables
+here, that you want to keep joined with your log-data).}
 
-\item{questionNamesTo}{string - name of the variable that will identify
+\item{questionNamesTo}{A string - name of the variable that will identify
 survey screen (page) in the results (i.e. one storing names of variables
-storing log-data streams in the provided data)}
+storing log-data streams in the input data).}
+
+\item{questionNamesPrefix}{A string - prefix of names of variables storing
+log-data streams that should be deleted while turning these names into values
+of the variable identifying survey screen.}
 }
 \value{
-data frame with columns:
-\itemize{
-  \item{timeStamp,}
-  \item{type,}
-  \item{target.tagName,}
-  \item{target.id,}
-  \item{target.class,}
-  \item{which,}
-  \item{metaKey,}
-  \item{pageX,}
-  \item{pageY,}
-  \item{broken.}
+A data frame with columns:
+\describe{
+  \item{timeStamp}{Time stamp of an event.}
+  \item{type}{Type of event.}
+  \item{target.tagName}{Type of a HTML element that triggered an event (may
+                        be empty for some types of events).}
+  \item{target.id}{Id of a HTML element that triggered an event (may be empty
+                   for some types of events).}
+  \item{target.class}{CSS classes assigned to a HTML element that triggered
+                      an event (may be empty for some types of events).}
+  \item{which}{Information about which mouse button was pressed.}
+  \item{metaKey}{Information regrading a meta key (ALT, CTRL) was pressed.}
+  \item{pageX}{Location of an event on the webpage - horizontal axis.}
+  \item{pageY}{Location of an event on the webpage - vertical axis.}
+  \item{broken}{Flag indicating whether a record is broken.}
 }
 }
 \description{
@@ -39,6 +47,10 @@ Function is called internally by
 intended to be called by package users themselves). It pivots columns of
 a data frame storing log-data streams to a \emph{long} format and then
 separates log-data streams into different rows and columns. It performs
-\strong{no} checks or additional transformations (like assuring formats of
-specific columns) - this is done only afterwards by another functions.
+\strong{no} log-data consistency checks or additional transformations (like
+assuring formats of specific columns) - this is done only afterwards by
+another functions (see \code{\link{preprocess_actions}}).
+}
+\seealso{
+\code{\link{separate_logdata_types}}
 }

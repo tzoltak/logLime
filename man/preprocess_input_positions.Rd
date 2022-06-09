@@ -6,78 +6,85 @@
 \usage{
 preprocess_input_positions(
   logData,
-  respScreenIds,
+  respId,
+  screenId,
   surveyStructure = NULL,
   imputeLastPageXY = median
 )
 }
 \arguments{
-\item{logData}{data frame with log-data as returned by
-\code{\link{logstreams_to_data_frame}}}
+\item{logData}{A data frame with log-data as returned by
+\code{\link{logstreams_to_data_frame}}.}
 
-\item{respScreenIds}{<tidy-select> names of columns identifying
-respondent-screens}
+\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying respondent.}
 
-\item{surveyStructure}{optionally a data frame with mapping of values
-possibly occurring in the \code{target.id} column of a data frame provided by
-the \code{logData} argument onto question, subquestion and answer codes as
-returned by \code{\link{read_survey_structure}}}
+\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying survey screen.}
 
-\item{imputeLastPageXY}{function that will be used to impute position of
+\item{surveyStructure}{A data frame storing mapping of
+\emph{SGQA identifiers}  onto question, subquestion and answer codes.}
+
+\item{imputeLastPageXY}{A function that will be used to impute position of
 inputs in last subquestions/answers in array-format questions - see
-\emph{Details} section below; it is \code{\link{median}} by default}
+\emph{Details} section below. It is \code{\link{median}} by default.}
 }
 \value{
-data frame with columns:
-\itemize{
-  \item{Columns defined by \code{respScreenIds}}
-  \item{target.tagName,}
-  \item{target.id,}
-  \item{target.class,}
-  \item{width,}
-  \item{height,}
-  \item{pageX,}
-  \item{pageY.}
+A data frame with columns:
+\describe{
+  \item{respId}{Column(s) defined by \code{respId}.}
+  \item{screenId}{Column(s) defined by \code{screenId}.}
+  \item{target.tagName}{Type of an element.}
+  \item{target.id}{Id of an element.}
+  \item{target.class}{CSS classes assigned to an element.}
+  \item{width}{Element width.}
+  \item{height}{Element height.}
+  \item{pageX}{Location of an element on the webpage - horizontal axis.}
+  \item{pageY}{Location of an element on the webpage - vertical axis.}
 }
-and if \code{surveyStructure} argument was provided with additional columns:
-\itemize{
-  \item{questionId,}
-  \item{questionFormat,}
-  \item{subquestionCode,}
-  \item{answerCode.}
+Additionally, if \code{surveyStructure} argument was provided also with
+columns:
+\describe{
+  \item{questionId}{Question id (in LimeSurvey database).}
+  \item{questionFormat}{A letter code of a question format - see
+                        \href{https://manual.limesurvey.org/Question_object_types#Current_question_types}{LimeSurvey documentation page}.}
+  \item{questionCode}{Question code.}
+  \item{subquestionCode}{Subquestion code.}
+  \item{answerCode}{Answer code.}
 }
 }
 \description{
 Function is called internally by
 \code{\link{separate_logdata_types}} and is not exported (i.e. it is not
 intended to be called by package users themselves). It selects records
-describing input element's positions from a data frame storing different
+describing input elements positions from a data frame storing different
 types of log-data (returned by \code{\link{logstreams_to_data_frame}}) and
 performs a preprocessing that includes:
 \itemize{
-  \item{Converting column types storing numeric values to numeric type.}
+  \item{Converting columns that are supposed to store numeric values to
+        a numeric type}
   \item{Transforming \code{pageX} and \code{pageY} columns so they describe
         position of the \strong{center} of the element instead of position
         of its upper-left corner.}
   \item{If  \code{surveyStructure} argument is provided, transforming
-        \code{pageX} and \code{pageY} columns
-         \strong{for inputs from array-type questions} so they describe
-         actual position of an element on the page (there are some
-         limitations - see \emph{Details} section below).}
+        \code{pageX} and \code{pageY} columns \strong{for inputs from
+        array-type questions} so they describe actual position of an element
+        on the page (however, there are some limitations - see \emph{Details}
+        section below).}
 }
 Last two transformations make returned data more useful while creating
-backgrounds on plots showing cursor moves.
+backgrounds for plots showing cursor moves.
 }
 \details{
 Because of some aspects of how \emph{LimeSurvey's} responsive
-layout works with respect to array type questions in these questions position
-of INPUT elements do not describe actual position at which INPUT element were
-visible for the respondent (i.e. center of an array cell; instead, these
-positions describe the upper-left corner of a table cell in which a given
-element was placed). \strong{Function can identify array type questions only
-if \code{respScreenIds} argument is provided} and then it tries to correct
-reported positions so they describe actual position of INPUT elements on the
-page. However, there are some limitations:
+layout works with respect to array type questions in questions of this
+type(s) position of INPUT elements do not describe actual position at which
+these elements were visible for the respondent (i.e. center of an array cell;
+instead, these positions describe the upper-left corner of a table cell in
+which a given element was placed). \strong{Function can identify array type
+questions only if \code{respScreenIds} argument is provided} and then it
+tries to correct reported positions so they describe actual position of INPUT
+elements on the page. However, there are some limitations:
 \itemize{
   \item{Precise position can be derived for every answer/subquestion except
         the last ones by subtracting position reported for inputs associated
@@ -91,7 +98,7 @@ page. However, there are some limitations:
         were already computed for the other answers/subquestions. With
         respect to the horizontal axis such imputation typically should be
         precise because \emph{LimeSurvey} rather creates table cells of the
-        same width in array type questions. \strong{With respect to the
+        same width in array type questions. \strong{But with respect to the
         vertical axis, it is nothing more than a lucky guess, however.}}
   \item{\strong{If there is only one answer or subquestion, position on
         a respective dimension can not be corrected (because of the lack of
@@ -99,4 +106,8 @@ page. However, there are some limitations:
   \item{At the moment \strong{no corrections are made for an array
         dual-scale questions}.}
 }
+}
+\seealso{
+\code{\link{preprocess_system_info}}
+\code{\link{separate_logdata_types}}
 }

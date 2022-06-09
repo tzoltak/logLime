@@ -5,26 +5,30 @@
 #' (tab-delimited) files storing survey structure previously exported from the
 #' \emph{LimeSurvey} web-survey platform (if provided with file names) or passes
 #' down a provided data frame.
-#' @param x character vector with file names \strong{or} a data frame with
-#' already read survey structure file
-#' @return data frame with columns:
-#' \itemize{
-#'   \item{target.id,}
-#'   \item{surveyId,}
-#'   \item{questionId,}
-#'   \item{questionFormat,}
-#'   \item{SGQA,}
-#'   \item{questionCode,}
-#'   \item{subquestionCode,}
-#'   \item{answerCode.}
+#' @param x A character vector with file names \strong{or} a data frame with
+#' already read survey structure file.
+#' @return A data frame with columns:
+#' \describe{
+#'   \item{target.id}{Possible id of a survey interface (HTML) element.}
+#'   \item{surveyId}{Survey id (in LimeSurvey database).}
+#'   \item{questionId}{Question id (in LimeSurvey database).}
+#'   \item{questionFormat}{A letter code of a question format - see
+#'                         \href{https://manual.limesurvey.org/Question_object_types#Current_question_types}{LimeSurvey documentation page}.}
+#'   \item{SGQA}{Question/subquestion/answer \emph{SGQA identifier} - see
+#'               \href{https://manual.limesurvey.org/SGQA_identifier}{LimeSurvey documentation page}.}
+#'   \item{questionCode}{Question code.}
+#'   \item{subquestionCode}{Subquestion code.}
+#'   \item{answerCode}{Answer code.}
 #' }
+#' @seealso \code{\link{separate_logdata_types}}
+#' \code{\link{preprocess_input_positions}} \code{\link{preprocess_actions}}
 #' @importFrom utils read.delim
 #' @importFrom dplyr %>% .data all_of bind_rows filter left_join mutate
 #' select summarise
 #' @importFrom tidyr expand_grid
 read_survey_structure <- function(x) {
   if (is.character(x)) {
-    fExists <- file.exists(x)
+    fExists <- file.exists(x) | grepl("^http(|s)://", x)
     if (!all(fExists)) {
       stop("File(s) with survey structure that do not exist: '",
            paste(x[!fExists], collapse = "', '"), "'.")
@@ -59,6 +63,13 @@ read_survey_structure <- function(x) {
     bind_rows() %>%
     return()
 }
+#' @title Reading survey structure file internals
+#' @description Function filters out rows of the survey structure file that
+#' are unimportant for determining mapping of survey interface elements' ids
+#' to question/subquestions/answer codes
+#' @param x A data frame with survey structure file read.
+#' @return A data frame.
+#' @noRd
 discard_nonimportant_survey_information <- function(x) {
   names(x) <- sub("^type.?[sS]cale$", "questionFormat", names(x))
   x %>%
@@ -67,6 +78,12 @@ discard_nonimportant_survey_information <- function(x) {
     filter(class %in% c("G", "Q", "SQ", "A")) %>%
     return()
 }
+#' @title Reading survey structure file internals
+#' @description Function creates a set of all possible survey interface
+#' elements' ids assigned to survey questions, subquestions and answers.
+#' @param x A data frame describing survey structure.
+#' @return The input data frame with a column \emph{target.id} added.
+#' @noRd
 construct_ids <- function(x) {
   x$groupId <-  x$questionId <- groupId <- questionId <- NA
   for (r in 1:nrow(x)) {

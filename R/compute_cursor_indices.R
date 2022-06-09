@@ -1,64 +1,83 @@
 #' @title Computing indicators describing cursor moves
-#' @description Function computes few indices describing the way respondent
+#' @description Function computes several indices describing the way respondent
 #' moves a cursor on a survey screen.
-#' @param actions data frame containg data regarding \emph{actions} - typically
-#' element \code{actions} of a list returned by
-#' \code{\link{separate_logdata_types}}
-#' @param respScreenIds <tidy-select> names of columns identifying
-#' respondent-screens
-#' @param systemInfo optionally data frame containg data regarding
-#'  \emph{system information} - typically element \code{systemInfo} of a list
-#'  returned by \code{\link{separate_logdata_types}}; it is required to compute
-#'  relative variants of indices
-#' @return data frame with columns:
-#' \itemize{
-#'   \item{Columns defined by \code{respScreenIds}}
-#'   \item{\code{dX} - total distance travelled on horizontal axis,}
-#'   \item{\code{dY} - total dostance travelled on vertical axis,}
-#'   \item{\code{vX} - average horizontal speed,}
-#'   \item{\code{vY} - average vertical speed,}
-#'   \item{\code{aX} - average absolute horizontal acceleration,}
-#'   \item{\code{aY} - average absolute vertical acceleration,}
-#'   \item{\code{flipsX} - number of \emph{flips} (changing direction of move) on horizontal axis,}
-#'   \item{\code{flipsY} - number of \emph{flips} (changing direction of move) on vertical axis,}
-#'   \item{Aforementioned columns with suffix \emph{_sc} - analogous indiced
-#'         computed using cursor moves corrected for scrolling (i.e. not taking
-#'         into acount cursor moves on a survey screen that took place because
-#'         of other actions than moving a cursor itself using a pointing device).}
+#' @inheritParams compute_aat
+#' @param systemInfo Optionally a data frame containing data regarding
+#' \emph{system information} - typically element \code{systemInfo} of a list
+#' returned by \code{\link{separate_logdata_types}}. \strong{It is required to
+#' compute relative variants of indices.}
+#' @details Please note that values of average absolute acceleration (and only
+#' these indices!) depends on whether \emph{stagnations} were previously
+#' separated from \emph{mousemove} events or no - see
+#' \code{\link{separate_stagnations}} for details.
+#' @return A data frame with columns:
+#' \describe{
+#'   \item{respId}{Column(s) defined by \code{respId}.}
+#'   \item{screenId}{Column(s) defined by \code{screenId}.}
+#'   \item{dX}{Total distance traveled on horizontal axis [px].}
+#'   \item{dY}{Total distance traveled on vertical axis [px].}
+#'   \item{vX}{Average horizontal speed [px/s].}
+#'   \item{vY}{Average vertical speed [px/s].}
+#'   \item{aX}{Average absolute horizontal acceleration [px/s^2].}
+#'   \item{aY}{Average absolute vertical acceleration[px/s^2].}
+#'   \item{flipsX}{Number of \emph{flips} (changing direction of move)
+#'                 on horizontal axis.}
+#'   \item{flipsY}{Number of \emph{flips} (changing direction of move)
+#'                 on vertical axis.}
+#'   \item{dX_sc, dY_sc, vX_sc, vY_sc, aX_sc, aY_sc, flipsX_sc, flipsY_sc}{
+#'         \emph{Scrolling corrected} versions of the aforementioned indices.
+#'         i.e. computed ruling out cursor moves over the survey screen that
+#'         occurred because of the other actions than moving a pointing device
+#'         (in particular: because of scrolling - either using mouse wheel,
+#'         touchpad gestures or scrolling bar - using arrows to scroll the page
+#'         or using TAB key to switch between survey form INPUT fields).}
 #' }
-#' and if \code{systemInfo} argument was provided with additional columns:
-#' \itemize{
-#'   \item{Aforementioned columns, with the exception of \code{flipsX} and
-#'         \code{flipsY}, with suffix \emph{_rel} or \emph{_screl} - relative
-#'         variants of the aforementioned indices, i.e. divided by the width or
-#'         height of a rectangle spanned by the most upper-left and the most
-#'         bottom-right INPUT element's - used to mark question answers -
-#'         position on a given survey screen.}
+#' Additionally, if \code{systemInfo} argument was provided there are included
+#' columns:
+#' \describe{
+#'   \item{dX_rel, dY_rel, vX_rel, vY_rel, aX_rel, aY_rel, dX_screl, dY_screl,
+#'         vX_screl, vY_screl, aX_screl, aY_screl}{
+#'         \emph{Relative} versions of the aforementioned indices, i.e. divided
+#'         by the width or height of a rectangle spanned by the most upper-left
+#'         and the most bottom-right survey form INPUT element's (used to mark
+#'         question answers) position on a given survey screen. These ones are
+#'         better comparable between respondents with different browser window
+#'         size.}
 #' }
 #' @seealso \code{\link{separate_logdata_types}}
-#' \code{\link{preprocess_system_info}}
-#' \code{\link{preprocess_input_positions}}
 #' @importFrom dplyr %>% .data across all_of any_of filter group_by lag mutate
 #' rename_with summarise
 #' @importFrom stats weighted.mean
 #' @export
 compute_cursor_indices <- function(actions,
-                                   respScreenIds =
-                                     all_of(intersect(names(actions),
-                                                      c("id", "token", "screen"))),
+                                   respId = any_of(c("id", "token", "respid")),
+                                   screenId = all_of("screen"),
+                                   returnFormat = c("long", "wide"),
                                    systemInfo = NULL) {
   stopifnot(is.data.frame(actions),
             all(c("type", "moveX", "moveY", "duration") %in% names(actions)))
-  respScreenIdsColumns <- names(select(actions, {{respScreenIds}}))
+  respIdColumns <- names(select(actions, {{respId}}))
+  screenIdColumns <- names(select(actions, {{screenId}}))
+  returnFormat <- match.arg(returnFormat,
+                            c("long", "wide"))
   if ("broken" %in% names(actions)) {
+    nRemoved <- nrow(actions)
     actions <- actions %>%
       filter(.data$broken != 1)
+    nRemoved <- nRemoved - nrow(actions)
+    if (nRemoved > 0L) {
+      message(format(nRemoved, big.mark = "'"),
+              " broken records were removed before computing cursor moves indices.\n",
+              "Be aware that indices are computed also for respondent-screens that contained these broken records (after excluding them).\n")
+    }
   }
+  message("Computing indices for individual moves.")
   actions <- actions %>%
     filter(.data$type == "mousemove") %>%
-    select(all_of(c(respScreenIdsColumns, "moveX", "moveY", "duration")),
+    select({{respId}}, {{screenId}},
+           all_of(c("moveX", "moveY", "duration")),
            any_of(c("moveXScrollCorrected", "moveYScrollCorrected"))) %>%
-    group_by(across(all_of(respScreenIdsColumns))) %>%
+    group_by(across(c({{respId}}, {{screenId}}))) %>%
     mutate(dX = abs(.data$moveX),
            dY = abs(.data$moveY),
            vX = .data$dX / .data$duration,
@@ -71,6 +90,7 @@ compute_cursor_indices <- function(actions,
            flipsY = as.integer(.data$dirY != lag(.data$dirY)))
   if (all(c("moveXScrollCorrected",
             "moveYScrollCorrected") %in% names(actions))) {
+    message("Computing scrolling-corrected versions.")
     actions <- actions %>%
       mutate(dX_sc = abs(.data$moveXScrollCorrected),
              dY_sc = abs(.data$moveYScrollCorrected),
@@ -84,22 +104,25 @@ compute_cursor_indices <- function(actions,
              flipsY_sc = as.integer(.data$dirY_sc != lag(.data$dirY_sc)))
   }
   if (!is.null(systemInfo)) {
+    message("Computing relative variants.")
     stopifnot(is.data.frame(systemInfo),
-              all(respScreenIdsColumns %in% names(systemInfo)),
+              all(respIdColumns %in% names(systemInfo)),
+              all(screenIdColumns %in% names(systemInfo)),
               all(c("inputsWidth", "inputsHeight") %in% names(systemInfo)),
               length(intersect(names(actions), names(systemInfo))) > 0)
     actions <- left_join(actions,
                          systemInfo %>%
-                           select(all_of(c(respScreenIdsColumns,
-                                           "inputsWidth", "inputsHeight"))),
-                         by = respScreenIdsColumns) %>%
+                           select({{respId}}, {{screenId}},
+                                  all_of(c("inputsWidth", "inputsHeight"))),
+                         by = c(respIdColumns, screenIdColumns)) %>%
       mutate(across(any_of(c("dX", "vX", "aX", "dX_sc", "vX_sc", "aX_sc")),
                     list(rel = ~./inputsWidth)),
              across(any_of(c("dY", "vY", "aY", "dY_sc", "vY_sc", "aY_sc")),
                     list(rel = ~./inputsHeight))) %>%
       rename_with(~sub("_sc_rel$", "_screl", .))
   }
-  actions %>%
+  message("Aggregating indices.")
+  actions <- actions %>%
     filter(!is.na(.data$duration)) %>%
     summarise(across(any_of(c("dX", "dX_sc", "dX_rel", "dX_screl",
                               "dY", "dY_sc", "dY_rel", "dY_screl",
@@ -110,9 +133,24 @@ compute_cursor_indices <- function(actions,
                               "vX_rel", "aX_rel", "vX_screl", "aX_screl",
                               "vY_rel", "aY_rel", "vY_screl", "aY_screl")),
                      weighted.mean, w = .data$duration, na.rm = TRUE),
-              .groups = "drop") %>%
-    return()
+              .groups = "drop")
+
+  if (returnFormat == "wide") {
+    message("Pivoting results to wide format.")
+    actions <- actions %>%
+      pivot_wider(id_cols = respIdColumns, names_from = screenIdColumns,
+                  names_sep = "_",
+                  values_from = setdiff(names(actions), c(respIdColumns,
+                                                          screenIdColumns)))
+  }
+  return(actions)
 }
+#' @title Auqiliary data transformations
+#' @description Function substitutes zeros in a vector by the last non-zero
+#' value preceeding a given one.
+#' x A numeric vector.
+#' @return A numeric vector.
+#' @noRd
 change_to_last_not0 <- function(x) {
   if (x[1L] %in% 0) x[1L] <- NA_real_
   if (length(x) == 1L) return(x)

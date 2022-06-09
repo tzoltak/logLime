@@ -6,56 +6,79 @@
 \usage{
 compute_cursor_indices(
   actions,
-  respScreenIds = all_of(intersect(names(actions), c("id", "token", "screen"))),
+  respId = any_of(c("id", "token", "respid")),
+  screenId = all_of("screen"),
+  returnFormat = c("long", "wide"),
   systemInfo = NULL
 )
 }
 \arguments{
-\item{actions}{data frame containg data regarding \emph{actions} - typically
-element \code{actions} of a list returned by
-\code{\link{separate_logdata_types}}}
+\item{actions}{A data frame containing data regarding \emph{actions} -
+typically element \emph{actions} of a list returned by
+\code{\link{separate_logdata_types}}.}
 
-\item{respScreenIds}{<tidy-select> names of columns identifying
-respondent-screens}
+\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying respondent.}
 
-\item{systemInfo}{optionally data frame containg data regarding
+\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying survey screen.}
+
+\item{returnFormat}{String indicating whether results should be returned in
+a \emph{long} (row is respondent-(sub)question) or in a \emph{wide}
+(row is a respondent, there is a separate column for each (sub)question)
+format. Can be abbreviated.}
+
+\item{systemInfo}{Optionally a data frame containing data regarding
 \emph{system information} - typically element \code{systemInfo} of a list
-returned by \code{\link{separate_logdata_types}}; it is required to compute
-relative variants of indices}
+returned by \code{\link{separate_logdata_types}}. \strong{It is required to
+compute relative variants of indices.}}
 }
 \value{
-data frame with columns:
-\itemize{
-  \item{Columns defined by \code{respScreenIds}}
-  \item{\code{dX} - total distance travelled on horizontal axis,}
-  \item{\code{dY} - total dostance travelled on vertical axis,}
-  \item{\code{vX} - average horizontal speed,}
-  \item{\code{vY} - average vertical speed,}
-  \item{\code{aX} - average absolute horizontal acceleration,}
-  \item{\code{aY} - average absolute vertical acceleration,}
-  \item{\code{flipsX} - number of \emph{flips} (changing direction of move) on horizontal axis,}
-  \item{\code{flipsY} - number of \emph{flips} (changing direction of move) on vertical axis,}
-  \item{Aforementioned columns with suffix \emph{_sc} - analogous indiced
-        computed using cursor moves corrected for scrolling (i.e. not taking
-        into acount cursor moves on a survey screen that took place because
-        of other actions than moving a cursor itself using a pointing device).}
+A data frame with columns:
+\describe{
+  \item{respId}{Column(s) defined by \code{respId}.}
+  \item{screenId}{Column(s) defined by \code{screenId}.}
+  \item{dX}{Total distance traveled on horizontal axis [px].}
+  \item{dY}{Total distance traveled on vertical axis [px].}
+  \item{vX}{Average horizontal speed [px/s].}
+  \item{vY}{Average vertical speed [px/s].}
+  \item{aX}{Average absolute horizontal acceleration [px/s^2].}
+  \item{aY}{Average absolute vertical acceleration[px/s^2].}
+  \item{flipsX}{Number of \emph{flips} (changing direction of move)
+                on horizontal axis.}
+  \item{flipsY}{Number of \emph{flips} (changing direction of move)
+                on vertical axis.}
+  \item{dX_sc, dY_sc, vX_sc, vY_sc, aX_sc, aY_sc, flipsX_sc, flipsY_sc}{
+        \emph{Scrolling corrected} versions of the aforementioned indices.
+        i.e. computed ruling out cursor moves over the survey screen that
+        occurred because of the other actions than moving a pointing device
+        (in particular: because of scrolling - either using mouse wheel,
+        touchpad gestures or scrolling bar - using arrows to scroll the page
+        or using TAB key to switch between survey form INPUT fields).}
 }
-and if \code{systemInfo} argument was provided with additional columns:
-\itemize{
-  \item{Aforementioned columns, with the exception of \code{flipsX} and
-        \code{flipsY}, with suffix \emph{_rel} or \emph{_screl} - relative
-        variants of the aforementioned indices, i.e. divided by the width or
-        height of a rectangle spanned by the most upper-left and the most
-        bottom-right INPUT element's - used to mark question answers -
-        position on a given survey screen.}
+Additionally, if \code{systemInfo} argument was provided there are included
+columns:
+\describe{
+  \item{dX_rel, dY_rel, vX_rel, vY_rel, aX_rel, aY_rel, dX_screl, dY_screl,
+        vX_screl, vY_screl, aX_screl, aY_screl}{
+        \emph{Relative} versions of the aforementioned indices, i.e. divided
+        by the width or height of a rectangle spanned by the most upper-left
+        and the most bottom-right survey form INPUT element's (used to mark
+        question answers) position on a given survey screen. These ones are
+        better comparable between respondents with different browser window
+        size.}
 }
 }
 \description{
-Function computes few indices describing the way respondent
+Function computes several indices describing the way respondent
 moves a cursor on a survey screen.
+}
+\details{
+Please note that values of average absolute acceleration (and only
+these indices!) depends on whether \emph{stagnations} were previously
+separated from \emph{mousemove} events or no - see
+\code{\link{separate_stagnations}} for details.
 }
 \seealso{
 \code{\link{separate_logdata_types}}
-\code{\link{preprocess_system_info}}
-\code{\link{preprocess_input_positions}}
 }

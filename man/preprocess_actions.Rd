@@ -4,49 +4,65 @@
 \alias{preprocess_actions}
 \title{Performing preprocessing of events}
 \usage{
-preprocess_actions(logData, respScreenIds, surveyStructure = NULL)
+preprocess_actions(logData, respId, screenId, surveyStructure = NULL)
 }
 \arguments{
-\item{logData}{data frame with log-data as returned by
-\code{\link{logstreams_to_data_frame}}}
+\item{logData}{A data frame with log-data as returned by
+\code{\link{logstreams_to_data_frame}}.}
 
-\item{respScreenIds}{<tidy-select> names of columns identifying
-respondent-screens}
+\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying respondent.}
 
-\item{surveyStructure}{data frame with mapping of \emph{SGQA identifiers}
-onto question, subquestion and answer codes}
+\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying survey screen.}
+
+\item{surveyStructure}{A data frame storing mapping of
+\emph{SGQA identifiers}  onto question, subquestion and answer codes.}
 }
 \value{
-data frame with columns:
-\itemize{
-  \item{Columns defined by \code{respScreenIds}}
-  \item{timeStamp,}
-  \item{timeStampRel,}
-  \item{type,}
-  \item{target.tagName,}
-  \item{target.id,}
-  \item{target.class,}
-  \item{which,}
-  \item{metaKey,}
-  \item{pageX,}
-  \item{pageY,}
-  \item{broken,}
-  \item{moveX,}
-  \item{moveY,}
-  \item{duration,}
-  \item{moveXScrollCorrected,}
-  \item{moveYScrollCorrected,}
-  \item{elementType.}
+A data frame with columns:
+\describe{
+  \item{respId}{Column(s) defined by \code{respId}.}
+  \item{screenId}{Column(s) defined by \code{screenId}.}
+  \item{timeStamp}{Time stamp of an event.}
+  \item{timeStampRel}{Time stamp of an event - relative to the time of
+                      loading a given survey screen.}
+  \item{type}{Type of event.}
+  \item{target.tagName}{Type of a HTML element that triggered an event (may
+                        be empty for some types of events).}
+  \item{target.id}{Id of a HTML element that triggered an event (may be
+                   empty for some types of events).}
+  \item{target.class}{CSS classes assigned to a HTML element that triggered
+                      an event (may be empty for some types of events).}
+  \item{which}{Information about which mouse button was pressed.}
+  \item{metaKey}{Information regrading a meta key (ALT, CTRL) was pressed.}
+  \item{pageX}{Location of an event on the webpage - horizontal axis.}
+  \item{pageY}{Location of an event on the webpage - vertical axis.}
+  \item{broken}{Flag indicating whether a record is broken.}
+  \item{moveX}{Distance of a \emph{mousemove} or \emph{scroll} event on
+               horizontal axis.}
+  \item{moveY}{Distance of a \emph{mousemove} or \emph{scroll} event on
+               vertical axis.}
+  \item{duration}{Duration of a \emph{mousemove} event.}
+  \item{moveXScrollCorrected}{Distance of a \emph{mousemove} event on
+                              horizontal axis, corrected for scrolling.}
+  \item{moveYScrollCorrected}{Distance of a \emph{mousemove} event on
+                              vertical axis, corrected for scrolling.}
+  \item{elementType}{Broad type of a survey interface element that triggered
+                     an event.}
 }
-and if \code{surveyStructure} argument was provided with additional columns:
-\itemize{
-  \item{surveyId,}
-  \item{questionId,}
-  \item{questionFormat,}
-  \item{SGQA,}
-  \item{questionCode,}
-  \item{subquestionCode,}
-  \item{answerCode.}
+Additionally, if \code{surveyStructure} argument was provided also with
+columns:
+\describe{
+  \item{surveyId}{Survey id (in LimeSurvey database).}
+  \item{questionId}{Question id (in LimeSurvey database).}
+  \item{questionFormat}{A letter code of a question format - see
+                        \href{https://manual.limesurvey.org/Question_object_types#Current_question_types}{LimeSurvey documentation page}.}
+  \item{SGQA}{Question/subquestion/answer \emph{SGQA identifier} - see
+              \href{https://manual.limesurvey.org/SGQA_identifier}{LimeSurvey documentation page}.}
+  \item{questionCode}{Question code.}
+  \item{subquestionCode}{Subquestion code.}
+  \item{answerCode}{Answer code.}
 }
 }
 \description{
@@ -56,18 +72,21 @@ intended to be called by package users themselves). It selects records
 describing respondent \emph{actions} (i.e. actual events) and performs
 a preprocessing that includes:
 \itemize{
-  \item{Converting column types storing numeric values to numeric type and
-        substituting "undefined" values with \code{NAs}.}
+  \item{Converting columns that are supposed to store numeric values to
+        a numeric type and substituting "undefined" values with \code{NAs}.}
   \item{Computing length of scrolling events (given information about
-        \emph{page offsets} that is written in log-data streams;)}
+        \emph{page offsets} that is written in log-data streams).}
   \item{Converting \emph{mousemove} events - that actually report a snapshot
         of a cursor position (that's how this works in JavaScript) - into
-        events that actually describe moves}
+        events that actually describe moves.}
   \item{Only if \code{surveyStructure} is provided: assigning question,
         subquestion (item) and response category codes to events connected
-        with \emph{hovering} and provides a simple classification of what was
-        \emph{hovered}.}
+        with \emph{hovering}.}
   \item{Assigning labels broadly describing type of an element on which
         a given event was triggered.}
 }.
+}
+\seealso{
+\code{\link{separate_logdata_types}}
+\code{\link{read_survey_structure}}
 }

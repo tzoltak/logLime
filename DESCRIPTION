@@ -1,7 +1,7 @@
 Package: logLime
 Type: Package
 Title: Creating process indicators from logs created by logDataLimeSurvey JS applet
-Version: 0.0.9100
+Version: 0.1.0
 Authors@R: c(person("Tomasz", "Zoltak",
                     email = "tomek@zozlak.org",
                     role = c("aut", "cre"),
@@ -9,17 +9,23 @@ Authors@R: c(person("Tomasz", "Zoltak",
 Maintainer: Tomasz Zoltak <tomek@zozlak.org>
 Description: Package allows to transform raw data created by the
     logDataLimeSurvey JavaScript applet (see
-    https://github.com/tzoltak/logdataLimeSurvey) and exported from the
-    LimeSurvey web-survey platform to a more analytically useful form.
+    https://github.com/tzoltak/logDataLimeSurvey) and exported from the
+    LimeSurvey web-survey platform to a more analytically useful form and
+    compute selected set of so-called process indicators related to
+    cursor moves, answering speed, hovering times and number of edits.
 License: MIT + file LICENSE
 Depends: R (>= 4.0.0)
 Imports:
     tidyr (>= 1.0.0),
     dplyr (>= 1.0.2)
 Suggests:
+    arrow,
     testthat,
-    covr
+    covr,
+    knitr,
+    rmarkdown
 Encoding: UTF-8
 Language: en-US
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Config/testthat/edition: 3
+VignetteBuilder: knitr

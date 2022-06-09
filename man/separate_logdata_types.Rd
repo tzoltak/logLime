@@ -2,36 +2,41 @@
 % Please edit documentation in R/separate_logdata_types.R
 \name{separate_logdata_types}
 \alias{separate_logdata_types}
-\title{Separating raw log-data into information on system input position and
+\title{Separating raw log-data into information on system, input position and
 actions}
 \usage{
 separate_logdata_types(
   logData,
   surveyStructure = NULL,
-  respId = all_of(intersect(names(logData), c("id", "token"))),
-  questionNamesTo = "screen"
+  respId = any_of(c("id", "token", "respid")),
+  questionNamesTo = "screen",
+  questionNamesPrefix = ""
 )
 }
 \arguments{
-\item{logData}{data frame with log-data streams recorded by the
-\emph{logDataLimeSurvey} applet stored in its columns}
+\item{logData}{A data frame with log-data streams recorded by the
+\emph{logDataLimeSurvey} applet stored in its columns.}
 
-\item{surveyStructure}{optionally either a name (or vector of names) of a
+\item{surveyStructure}{Optionally either a name (or vector of names) of a
 \emph{LimeSurvey} survey structure file exported in the text (.txt) format or
 a data frame with such a file already read, or list of data frames with such
-files already read}
+files already read.}
 
-\item{respId}{optionally (default value covers typical structure of
-survey results exported from the \emph{LimeSurvey}) <tidy-select> name(s)
-of the column(s) containing respondent's id (and perhaps other variables you
-want to keep joined with your log-data)}
+\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying respondent. (You may also list additional variables
+here, that you want to keep joined with your log-data).}
 
-\item{questionNamesTo}{optionally a string - name of a variable that will
-identify (describe) survey screen (page) in the results}
+\item{questionNamesTo}{A string - name of the variable that will identify
+survey screen (page) in the results (i.e. one storing names of variables
+storing log-data streams in the input data).}
+
+\item{questionNamesPrefix}{A string - prefix of names of variables storing
+log-data streams that should be deleted while turning these names into values
+of the variable identifying survey screen.}
 }
 \value{
-List of three data frames with elements named \emph{systemInfo},
-\emph{inputPositions} and  \emph{actions}. Some more information on how these
+A list of three data frames with elements named \emph{systemInfo},
+\emph{inputPositions} and  \emph{actions}. More information on how these
 data frames are constructed you may find in the documentation regarding
 functions listed below in the \emph{See also} section.
 }
@@ -41,10 +46,12 @@ frames containing:
 \itemize{
   \item{\emph{System information}: data on respondent's browser, OS,
         screen and browser window resolution.}
-  \item{Information about the \emph{layout} of the web page: specifically,
-        position of each INPUT element on the page. This information will be
-        useful to standardize cursor moves indicators with respect to the
-        differences in the survey page layout between respondents.}
+  \item{Information about the \emph{layout} of the survey screen.
+        Specifically, position of each INPUT element on the page. This
+        information will be useful to standardize cursor moves indicators
+        with respect to the differences in the survey page layout between
+        respondents and also to draw backgrounds to graphs presenting
+        cursor trajectories.}
   \item{Information about respondent's \emph{actions}.}
 }
 Data frame provided as an input typically comes from reading a CSV file with

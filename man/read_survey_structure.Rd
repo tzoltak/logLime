@@ -7,20 +7,22 @@
 read_survey_structure(x)
 }
 \arguments{
-\item{x}{character vector with file names \strong{or} a data frame with
-already read survey structure file}
+\item{x}{A character vector with file names \strong{or} a data frame with
+already read survey structure file.}
 }
 \value{
-data frame with columns:
-\itemize{
-  \item{target.id,}
-  \item{surveyId,}
-  \item{questionId,}
-  \item{questionFormat,}
-  \item{SGQA,}
-  \item{questionCode,}
-  \item{subquestionCode,}
-  \item{answerCode.}
+A data frame with columns:
+\describe{
+  \item{target.id}{Possible id of a survey interface (HTML) element.}
+  \item{surveyId}{Survey id (in LimeSurvey database).}
+  \item{questionId}{Question id (in LimeSurvey database).}
+  \item{questionFormat}{A letter code of a question format - see
+                        \href{https://manual.limesurvey.org/Question_object_types#Current_question_types}{LimeSurvey documentation page}.}
+  \item{SGQA}{Question/subquestion/answer \emph{SGQA identifier} - see
+              \href{https://manual.limesurvey.org/SGQA_identifier}{LimeSurvey documentation page}.}
+  \item{questionCode}{Question code.}
+  \item{subquestionCode}{Subquestion code.}
+  \item{answerCode}{Answer code.}
 }
 }
 \description{
@@ -30,4 +32,8 @@ intended to be called by package users themselves). It reads in text
 (tab-delimited) files storing survey structure previously exported from the
 \emph{LimeSurvey} web-survey platform (if provided with file names) or passes
 down a provided data frame.
+}
+\seealso{
+\code{\link{separate_logdata_types}}
+\code{\link{preprocess_input_positions}} \code{\link{preprocess_actions}}
 }

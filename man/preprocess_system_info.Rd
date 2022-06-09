@@ -4,32 +4,40 @@
 \alias{preprocess_system_info}
 \title{Performing preprocessing of system information}
 \usage{
-preprocess_system_info(logData, inputPositions, respScreenIds)
+preprocess_system_info(logData, inputPositions, respId, screenId)
 }
 \arguments{
-\item{logData}{data frame with log-data as returned by
-\code{\link{logstreams_to_data_frame}}}
+\item{logData}{A data frame with log-data as returned by
+\code{\link{logstreams_to_data_frame}}.}
 
-\item{inputPositions}{data frame with data on INPUT element positions as
-returned by \code{\link{preprocess_input_positions}}}
+\item{inputPositions}{A data frame with data on INPUT element positions as
+returned by \code{\link{preprocess_input_positions}}.}
 
-\item{respScreenIds}{<tidy-select> names of columns identifying
-respondent-screens}
+\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying respondent.}
+
+\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
+Variable(s) identifying survey screen.}
 }
 \value{
-data frame with columns:
-\itemize{
-  \item{Columns defined by \code{respScreenIds}}
-  \item{userAgent,}
-  \item{language,}
-  \item{browserWidth,}
-  \item{browserHeight,}
-  \item{screenWidth,}
-  \item{screenHeight,}
-  \item{inputsMinPageX,}
-  \item{inputsMinPageY,}
-  \item{inputsWidth.}
-  \item{inputsHeight.}
+A data frame with columns:
+\describe{
+  \item{respId}{Column(s) defined by \code{respId}.}
+  \item{screenId}{Column(s) defined by \code{screenId}.}
+  \item{userAgent}{Value returned by JavaScript navigator.userAgent property.}
+  \item{language}{Value returned by JavaScript navigator.language property.}
+  \item{browserWidth}{Width of the browser window.}
+  \item{browserHeight}{Height of the browser window.}
+  \item{screenWidth}{Screen width.}
+  \item{screenHeight}{Screen height.}
+  \item{inputsMinPageX}{Horizontal position of the most upper-left INPUT
+                        element on a given survey screen.}
+  \item{inputsMinPageY}{Vertical position of the most upper-left INPUT
+                        element on a given survey screen.}
+  \item{inputsWidth}{Width of a rectangle spanned by positions of the most
+                     upper-left and the most bottom-right INPUT elements.}
+  \item{inputsHeight}{Height of a rectangle spanned by positions of the most
+                      upper-left and the most bottom-right INPUT elements.}
 }
 }
 \description{
@@ -40,22 +48,23 @@ describing system information (i.e. respondent's browser and screen) and
 performs a preprocessing that includes:
 \itemize{
   \item{Renaming columns accordingly to the data they store.}
-  \item{Converting column types storing numeric values to numeric type.}
+  \item{Converting columns that are supposed to store numeric values to
+        a numeric type}
   \item{Removing duplicates that occurred due to page being reloaded
         (typically because of some responses were not given to
-        \emph{mandatory} questions or some criteria defined with respect to
-        answers were not fulfilled).}
+        \emph{mandatory} questions or some validation criteria defined with
+        respect to answers were not fulfilled).}
   \item{Putting data regarding browser and screen into one row (for each
         respondent-screen).}
   \item{Including information regarding position of the most upper-left
         INPUT element used to mark question answers and width and height of
-        a rectangle spanned by the most upper-left and the most bottom-right
-        INPUT element's - used to mark question answers -  position.
-        This information is useful to perform standardization of cursor
-        moves indices to correct for respondent-specific differences in
-        survey layout.}
+        a rectangle spanned by positions of the most upper-left and the most
+        bottom-right INPUT elements. This information is useful to perform
+        standardization of cursor moves indices to correct for
+        respondent-specific differences in survey layout (see
+        \code{\link{compute_cursor_indices}}).}
 }
 }
 \seealso{
-\code{\link{find_problems}}
+\code{\link{find_problems}} \code{\link{separate_logdata_types}}
 }
