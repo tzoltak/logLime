@@ -8,8 +8,7 @@ compute_cursor_indices(
   actions,
   respId = any_of(c("id", "token", "respid")),
   screenId = all_of("screen"),
-  returnFormat = c("long", "wide"),
-  systemInfo = NULL
+  returnFormat = c("long", "wide")
 )
 }
 \arguments{
@@ -27,11 +26,6 @@ Variable(s) identifying survey screen.}
 a \emph{long} (row is respondent-(sub)question) or in a \emph{wide}
 (row is a respondent, there is a separate column for each (sub)question)
 format. Can be abbreviated.}
-
-\item{systemInfo}{Optionally a data frame containing data regarding
-\emph{system information} - typically element \code{systemInfo} of a list
-returned by \code{\link{separate_logdata_types}}. \strong{It is required to
-compute relative variants of indices.}}
 }
 \value{
 A data frame with columns:
@@ -56,8 +50,9 @@ A data frame with columns:
         touchpad gestures or scrolling bar - using arrows to scroll the page
         or using TAB key to switch between survey form INPUT fields).}
 }
-Additionally, if \code{systemInfo} argument was provided there are included
-columns:
+Additionally, if \code{moveX_rel} and \emph{moveY_rel} columns or
+\emph{moveXScrollCorrected_rel} and \emph{moveYScrollCorrected} columns are
+available in the input data, there are included columns:
 \describe{
   \item{dX_rel, dY_rel, vX_rel, vY_rel, aX_rel, aY_rel, dX_screl, dY_screl,
         vX_screl, vY_screl, aX_screl, aY_screl}{
@@ -66,7 +61,7 @@ columns:
         and the most bottom-right survey form INPUT element's (used to mark
         question answers) position on a given survey screen. These ones are
         better comparable between respondents with different browser window
-        size.}
+        size (see \code{\link{compute_relative_positions}}).}
 }
 }
 \description{
@@ -74,11 +69,16 @@ Function computes several indices describing the way respondent
 moves a cursor on a survey screen.
 }
 \details{
+To get also \emph{relative} versions of indices, call
+\code{\link{compute_relative_positions}} on a data frame storing actions
+(events) before passing it into the \code{actions} argument.
+
 Please note that values of average absolute acceleration (and only
 these indices!) depends on whether \emph{stagnations} were previously
 separated from \emph{mousemove} events or no - see
 \code{\link{separate_stagnations}} for details.
 }
 \seealso{
-\code{\link{separate_logdata_types}}
+\code{\link{separate_logdata_types}},
+\code{\link{compute_relative_positions}}
 }

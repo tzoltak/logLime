@@ -49,8 +49,6 @@ compute_hovering <- function(actions,
   actions <- ungroup(actions)
   respIdColumns <- names(select(actions, {{respId}}))
   screenIdColumns <- names(select(actions, {{screenId}}))
-  stopifnot(all(respIdColumns %in% names(actions)),
-            all(screenIdColumns %in% names(actions)))
 
   message("Preprocessing log-data streams.")
   if (!("broken" %in% names(actions))) {

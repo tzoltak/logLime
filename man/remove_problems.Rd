@@ -16,11 +16,6 @@ remove_problems(
 element \emph{actions} of such a list. In the latter case also argument
 \code{systemInfo} must be provided.}
 
-\item{systemInfo}{Optionally a data frame containing data regarding
-\emph{system information} - typically element \code{systemInfo} of a list
-returned by \code{\link{separate_logdata_types}}. \strong{It is required to
-compute relative variants of indices.}}
-
 \item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
 Variable(s) identifying respondent.}
 

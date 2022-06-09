@@ -2,11 +2,11 @@
 #' @description Function computes several indices describing the way respondent
 #' moves a cursor on a survey screen.
 #' @inheritParams compute_aat
-#' @param systemInfo Optionally a data frame containing data regarding
-#' \emph{system information} - typically element \code{systemInfo} of a list
-#' returned by \code{\link{separate_logdata_types}}. \strong{It is required to
-#' compute relative variants of indices.}
-#' @details Please note that values of average absolute acceleration (and only
+#' @details To get also \emph{relative} versions of indices, call
+#' \code{\link{compute_relative_positions}} on a data frame storing actions
+#' (events) before passing it into the \code{actions} argument.
+#'
+#' Please note that values of average absolute acceleration (and only
 #' these indices!) depends on whether \emph{stagnations} were previously
 #' separated from \emph{mousemove} events or no - see
 #' \code{\link{separate_stagnations}} for details.
@@ -32,8 +32,9 @@
 #'         touchpad gestures or scrolling bar - using arrows to scroll the page
 #'         or using TAB key to switch between survey form INPUT fields).}
 #' }
-#' Additionally, if \code{systemInfo} argument was provided there are included
-#' columns:
+#' Additionally, if \code{moveX_rel} and \emph{moveY_rel} columns or
+#' \emph{moveXScrollCorrected_rel} and \emph{moveYScrollCorrected} columns are
+#' available in the input data, there are included columns:
 #' \describe{
 #'   \item{dX_rel, dY_rel, vX_rel, vY_rel, aX_rel, aY_rel, dX_screl, dY_screl,
 #'         vX_screl, vY_screl, aX_screl, aY_screl}{
@@ -42,18 +43,18 @@
 #'         and the most bottom-right survey form INPUT element's (used to mark
 #'         question answers) position on a given survey screen. These ones are
 #'         better comparable between respondents with different browser window
-#'         size.}
+#'         size (see \code{\link{compute_relative_positions}}).}
 #' }
-#' @seealso \code{\link{separate_logdata_types}}
-#' @importFrom dplyr %>% .data across all_of any_of filter group_by lag mutate
-#' rename_with summarise
+#' @seealso \code{\link{separate_logdata_types}},
+#' \code{\link{compute_relative_positions}}
+#' @importFrom dplyr %>% .data across all_of any_of filter group_by lag
+#' left_join mutate rename_with summarise
 #' @importFrom stats weighted.mean
 #' @export
 compute_cursor_indices <- function(actions,
                                    respId = any_of(c("id", "token", "respid")),
                                    screenId = all_of("screen"),
-                                   returnFormat = c("long", "wide"),
-                                   systemInfo = NULL) {
+                                   returnFormat = c("long", "wide")) {
   stopifnot(is.data.frame(actions),
             all(c("type", "moveX", "moveY", "duration") %in% names(actions)))
   respIdColumns <- names(select(actions, {{respId}}))
@@ -76,7 +77,9 @@ compute_cursor_indices <- function(actions,
     filter(.data$type == "mousemove") %>%
     select({{respId}}, {{screenId}},
            all_of(c("moveX", "moveY", "duration")),
-           any_of(c("moveXScrollCorrected", "moveYScrollCorrected"))) %>%
+           any_of(c("moveXScrollCorrected", "moveYScrollCorrected",
+                    "moveX_rel", "moveY_rel",
+                    "moveXScrollCorrected_rel", "moveYScrollCorrected_rel"))) %>%
     group_by(across(c({{respId}}, {{screenId}}))) %>%
     mutate(dX = abs(.data$moveX),
            dY = abs(.data$moveY),
@@ -103,23 +106,26 @@ compute_cursor_indices <- function(actions,
              flipsX_sc = as.integer(.data$dirX_sc != lag(.data$dirX_sc)),
              flipsY_sc = as.integer(.data$dirY_sc != lag(.data$dirY_sc)))
   }
-  if (!is.null(systemInfo)) {
+  if (all(c("moveX_rel", "moveY_rel") %in% names(actions))) {
     message("Computing relative variants.")
-    stopifnot(is.data.frame(systemInfo),
-              all(respIdColumns %in% names(systemInfo)),
-              all(screenIdColumns %in% names(systemInfo)),
-              all(c("inputsWidth", "inputsHeight") %in% names(systemInfo)),
-              length(intersect(names(actions), names(systemInfo))) > 0)
-    actions <- left_join(actions,
-                         systemInfo %>%
-                           select({{respId}}, {{screenId}},
-                                  all_of(c("inputsWidth", "inputsHeight"))),
-                         by = c(respIdColumns, screenIdColumns)) %>%
-      mutate(across(any_of(c("dX", "vX", "aX", "dX_sc", "vX_sc", "aX_sc")),
-                    list(rel = ~./inputsWidth)),
-             across(any_of(c("dY", "vY", "aY", "dY_sc", "vY_sc", "aY_sc")),
-                    list(rel = ~./inputsHeight))) %>%
-      rename_with(~sub("_sc_rel$", "_screl", .))
+    actions <- actions %>%
+      mutate(dX_rel = abs(.data$moveX_rel),
+             dY_rel = abs(.data$moveY_rel),
+             vX_rel = .data$dX_rel / .data$duration,
+             vY_rel = .data$dY_rel / .data$duration,
+             aX_rel = abs(.data$vX_rel - lag(.data$vX_rel, default = 0)) / .data$duration,
+             aY_rel = abs(.data$vY_rel - lag(.data$vY_rel, default = 0)) / .data$duration)
+  }
+  if (all(c("moveXScrollCorrected_rel",
+            "moveYScrollCorrected_rel") %in% names(actions))) {
+    message("Computing relative scrolling-corrected variants.")
+    actions <- actions %>%
+      mutate(dX_screl = abs(.data$moveXScrollCorrected_rel),
+             dY_screl = abs(.data$moveYScrollCorrected_rel),
+             vX_screl = .data$dX_screl / .data$duration,
+             vY_screl = .data$dY_screl / .data$duration,
+             aX_screl = abs(.data$vX_screl - lag(.data$vX_screl, default = 0)) / .data$duration,
+             aY_screl = abs(.data$vY_screl - lag(.data$vY_screl, default = 0)) / .data$duration)
   }
   message("Aggregating indices.")
   actions <- actions %>%

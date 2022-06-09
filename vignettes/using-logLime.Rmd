@@ -202,8 +202,8 @@ Be aware that **the problems identified by variables created by `separate_logdat
 
 Whether you identified some other type of problem in the data or want to perform further analysis suing only a subgroup of respondents and/or screens, the preferred workflow looks as follows:
 
--   If you want to analyse only some subset of respondent-screens, for example only respondents who used a mouse as a pointing device:
-    1. Create an object identifying the subgroup you want to analyse:
+-   If you want to analyze only some subset of respondent-screens, for example only respondents who used a mouse as a pointing device:
+    1. Create an object identifying the subgroup you want to analyze:
     ```{r}
     mouseOnly <- surveyResults %>%
       filter(device02 %in% "Mouse") %>%
@@ -355,11 +355,8 @@ compute_aht(hovering, returnFormat = "wide")
 To compute several indices describing the way respondent moves a cursor on a survey screen you may run:
 
 ```{r}
-(mouseMoves <- compute_cursor_indices(logData$actions,
-                                      systemInfo = logData$systemInfo))
+(mouseMoves <- compute_cursor_indices(logData$actions))
 ```
-
-Using argument `systemInfo` is optional, but otherwise you won't get *relative* versions of the indices.
 
 There are 4 main types of cursor moves indices:
 
@@ -368,19 +365,25 @@ There are 4 main types of cursor moves indices:
 -   *aX*, *aY* - average absolute vertical acceleration on horizontal and vertical axis respectively [px/s^2];
 -   *flipsX*, *flipsY* - number of flips (changing direction of move) on horizontal and vertical axis respectively.
 
-Along with *regular* versions, there are also returned:
+Along with *regular* versions, there are also *scrolling corrected* versions returned:
 
--   *Scroll corrected* versions of the indices, identified by the suffix *_sc*:
-    - These indices are computed ruling out cursor moves over the survey screen that occurred because of the other actions than moving a pointing device (in particular: because of scrolling - either using mouse wheel, touchpad gestures or scrolling bar - using arrows to scroll the page or using TAB key to switch between survey form INPUT fields).
--   *Relative* versions of the indices, identified by the suffix *_rel*:
-    - Values of this indices are computing by dividing a *regular* ones by the width or height of a rectangle spanned by the most upper-left and the most bottom-right survey form INPUT element's position on a given survey screen. Values of these indices ones are better comparable between respondents with different browser window size.
-    - There are no *relative* flips, because such a transformation makes no sense with respect to these indices.
--   *Relative scroll corrected* versions of the indices that are identified by the suffix *_screl* - combination of the two aforementioned modifications.
+-   These indices are identified by the suffix *_sc*.
+-   These indices are computed ruling out cursor moves over the survey screen that occurred because of the other actions than moving a pointing device (in particular: because of scrolling - either using mouse wheel, touchpad gestures or scrolling bar - using arrows to scroll the page or using TAB key to switch between survey form INPUT fields).
+
+Moreover, you can get *relative* versions of the indices:
+
+- Values of this indices are computing by dividing a *regular* and/or *scrolling corrected* ones by the width or height of a rectangle spanned by the most upper-left and the most bottom-right survey form INPUT element's position on a given survey screen. Values of these indices ones are better comparable between respondents with different browser window size.
+
+To get also this versions, you need to call `compute_relative_positions()` on the *actions* element (you need to provide also the *systemInfo* element of a log-data object as the second argument) before passing it into `compute_cursor_indices()`:
+
+```{r}
+(logData$actions <- compute_relative_positions(logData$actions,
+                                               logData$systemInfo))
+(mouseMoves <- compute_cursor_indices(logData$actions))
+```
 
 Mouse move indices also can be returned in a *wide* format:
 
 ```{r}
-compute_cursor_indices(logData$actions,
-                       returnFormat = "wide",
-                       systemInfo = logData$systemInfo)
+compute_cursor_indices(logData$actions, returnFormat = "wide")
 ```
