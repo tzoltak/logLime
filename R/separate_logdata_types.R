@@ -85,6 +85,11 @@ separate_logdata_types <-
     message("Processing system information.")
     systemInfo <- preprocess_system_info(logData, inputPositions, {{respId}},
                                          all_of(questionNamesTo))
+
+    inputPositions <- compute_relative_input_positions(inputPositions,
+                                                       systemInfo,
+                                                       c(respIdColumns,
+                                                         questionNamesTo))
     message("Processing actions:")
     logData <- preprocess_actions(logData, {{respId}}, all_of(questionNamesTo),
                                   surveyStructure)

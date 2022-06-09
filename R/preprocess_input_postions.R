@@ -75,11 +75,11 @@
 #'   \item{subquestionCode}{Subquestion code.}
 #'   \item{answerCode}{Answer code.}
 #' }
-#' @seealso \code{\link{preprocess_system_info}}
+#' @seealso \code{\link{preprocess_system_info}},
 #' \code{\link{separate_logdata_types}}
 #' @importFrom stats median
-#' @importFrom dplyr %>% .data all_of anti_join filter inner_join mutate n
-#' select
+#' @importFrom dplyr %>% .data all_of anti_join filter inner_join lag lead
+#' mutate n select
 preprocess_input_positions <- function(logData, respId, screenId,
                                        surveyStructure = NULL,
                                        imputeLastPageXY = median) {
@@ -123,10 +123,14 @@ preprocess_input_positions <- function(logData, respId, screenId,
              .data$answerCode, .data$pageX) %>%
       distinct() %>%
       group_by(across(c({{respId}}, {{screenId}})), .data$questionId) %>%
-      mutate(correctionX = .data$pageX - lag(.data$pageX)) %>%
-      mutate(correctionX = 0.5 * c(.data$correctionX[-1],
-                                   do.call(imputeLastPageXY,
-                                           list(.data$correctionX[-1])))) %>%
+      mutate(correctionX = lead(.data$pageX) - .data$pageX) %>%
+      mutate(correctionX = ifelse(.data$correctionX < 0,
+                                  NA_real_, .data$correctionX)) %>%
+      mutate(correctionX =
+               0.5 * ifelse(is.na(.data$correctionX),
+                            do.call(imputeLastPageXY,
+                                    list(.data$correctionX[!is.na(.data$correctionX)])),
+                            .data$correctionX)) %>%
       ungroup() %>%
       mutate(pageX = .data$pageX + ifelse(is.na(.data$correctionX),
                                           0, .data$correctionX)) %>%
@@ -162,8 +166,49 @@ preprocess_input_positions <- function(logData, respId, screenId,
       arrange(.data$rowNumber) %>%
       select(-.data$rowNumber)
   } else {
-    warning("With no `surveyStructure` argument provided input positions reported for array type questions will not describe actual position of elements on the page.",
-            call. = FALSE, immediate. = TRUE)
+    warning("With no `surveyStructure` argument provided input positions reported for array type questions will not describe actual position of elements on the page.")
   }
   return(logData)
+}
+#' @title Performing preprocessing of input positions
+#' @description Function is called internally by
+#' \code{\link{separate_logdata_types}} and is not exported (i.e. it is not
+#' intended to be called by package users themselves). It calculates
+#' \emph{relative} (see \code{\link{compute_relative_positions}}) positions
+#' of the INPUT elements and adds this data to the input data.
+#' @param inputPositions A data frame returned by
+#' \code{\link{preprocess_input_positions}}
+#' @param systemInfo A data frame returned by
+#' \code{\link{preprocess_system_info}}
+#' @param joinBy A character vector providing columns by which
+#' \code{inputPositions} and \code{systemInfo} should be joined.
+#' @return Input data frame with additional columns:
+#' \describe{
+#'   \item{width_rel}{\emph{Relative} width of an INPUT element.}
+#'   \item{height_rel}{\emph{Relative} height of an INPUT element.}
+#'   \item{pageX_rel}{\emph{Relative} position of an INPUT element on horizontal
+#'                    axis.}
+#'   \item{pageY_rel}{\emph{Relative} position of an INPUT element on vertical
+#'                    axis.}
+#' }
+#' @seealso \code{\link{preprocess_input_positions}},
+#' \code{\link{preprocess_system_info}}, \code{\link{separate_logdata_types}},
+#' \code{\link{compute_relative_positions}}
+#' @importFrom stats median
+#' @importFrom dplyr %>% .data all_of left_join mutate select
+compute_relative_input_positions <- function(inputPositions, systemInfo,
+                                             joinBy) {
+  inputPositions %>%
+    left_join(systemInfo %>%
+                select(all_of(joinBy),
+                       all_of(c("inputsMinPageX", "inputsMinPageY",
+                                "inputsWidth", "inputsHeight"))),
+              by = joinBy) %>%
+    mutate(width_rel = .data$width / .data$inputsWidth,
+           height_rel = .data$height / .data$inputsHeight,
+           pageX_rel = (.data$pageX - .data$inputsMinPageX) / .data$inputsWidth,
+           pageY_rel = (.data$pageY - .data$inputsMinPageY) / .data$inputsHeight) %>%
+    select(-all_of(c("inputsMinPageX", "inputsMinPageY",
+                     "inputsWidth", "inputsHeight"))) %>%
+    return()
 }

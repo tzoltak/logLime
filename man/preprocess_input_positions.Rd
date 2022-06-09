@@ -108,6 +108,6 @@ elements on the page. However, there are some limitations:
 }
 }
 \seealso{
-\code{\link{preprocess_system_info}}
+\code{\link{preprocess_system_info}},
 \code{\link{separate_logdata_types}}
 }

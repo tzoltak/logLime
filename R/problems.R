@@ -48,6 +48,9 @@ find_problems <- function(actions, respId, screenId) {
 #' element \emph{actions} of such a list. In the latter case also argument
 #' \code{systemInfo} must be provided.
 #' @inheritParams compute_cursor_indices
+#' @param systemInfo A data frame containing data regarding
+#' \emph{system information} - typically element \code{systemInfo} of a list
+#' returned by \code{\link{separate_logdata_types}}.
 #' @details Every column which name starts with \emph{problems} in the
 #' \emph{systemInfo} element of \code{x} or in \code{systemInfo} argument will
 #' be treated as marking problems in the data.

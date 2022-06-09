@@ -14,12 +14,12 @@
 #'   \item{pageY}{Last recorded cursor position on vertical axis before
 #'                a given \emph{timeStampRel}.}
 #'   \item{pageX_rel}{Last recorded \emph{relative} cursor position
-#'                    (see \code{\link{compite_relative_positions}}) on
+#'                    (see \code{\link{compute_relative_positions}}) on
 #'                    horizontal axis before a given \emph{timeStampRel}.
 #'                    Included only if there was \emph{pageX_rel} column in the
 #'                    input data.}
 #'   \item{pageY_rel}{Last recorded \emph{relative} cursor position
-#'                    (see \code{\link{compite_relative_positions}}) on
+#'                    (see \code{\link{compute_relative_positions}}) on
 #'                    vertical axis before a given \emph{timeStampRel}.
 #'                    Included only if there was \emph{pageY_rel} column in the
 #'                    input data.}

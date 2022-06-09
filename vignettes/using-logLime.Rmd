@@ -22,8 +22,8 @@ We will use the *arrow* library to read large CSV files into R and *dplyr* to pe
 
 ```{r}
 library(logLime)
-library(arrow)
-library(dplyr)
+library(arrow, warn.conflicts = FALSE)
+library(dplyr, warn.conflicts = FALSE)
 ```
 
 Data we will use are of two types:
@@ -238,6 +238,13 @@ For example, below we will manually remove some data using information stored in
    select(respid, screen, starts_with("problems")))
 logData <- lapply(logData, semi_join, y = noProblems, by = c("respid", "screen"))
 ```
+
+## Other log-data transforming functions
+
+There are two other functions included in the package that perform some transformation of log-data in order to prepare it for further analysis:
+
+-   `compute_relative_positions()` - it enhances data on *actions* (events), specyfically *mosemoves* and *clicks*, by computing positions and move distances *relative* to the position of a given survey screen (extremely located) form INPUT elements. Positions and distances recalculated this way are more comparable between respodnents with different browser window sizes. See section on cursor moves indices for examples of using this function.
+-   `compute_cursor_positions()` - it enables to compute cursor position at evenly spaced time points. Data in this form are necessary for example to prepare heat-map graphs illustrating amount of time spent by respondent over the different regions of the survey screen. Example of using this function you will find in the vignette regarding drawing graphs using log-data.
 
 # Storing log-data objects
 
