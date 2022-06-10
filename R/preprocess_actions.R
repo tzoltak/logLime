@@ -73,7 +73,7 @@
 #' @seealso \code{\link{separate_logdata_types}}
 #' \code{\link{read_survey_structure}}
 #' @importFrom dplyr %>% .data arrange bind_rows case_when cur_data everything
-#' filter group_by if_else lag mutate n ungroup
+#' filter group_by if_else lag lead mutate n ungroup
 preprocess_actions <- function(logData, respId, screenId,
                                surveyStructure = NULL) {
   # there will be probably some warnings in conversion to numerics because of
@@ -146,11 +146,13 @@ compute_mouse_moves <- function(actions, respId, screenId) {
             actions %>%
               filter(.data$type %in% c("mousemove", "pageLoaded")) %>%
               group_by(across(c({{respId}}, {{screenId}}))) %>%
-              mutate(duration = .data$timeStamp - lag(.data$timeStamp),
-                     moveX = .data$pageX - lag(.data$pageX,
-                                               default = .data$pageX[1]),
-                     moveY = .data$pageY - lag(.data$pageY,
-                                               default = .data$pageY[1]),
+              mutate(pageX = ifelse(.data$type %in% "pageLoaded",
+                                    lead(.data$pageX), .data$pageX),
+                     pageY = ifelse(.data$type %in% "pageLoaded",
+                                    lead(.data$pageY), .data$pageY),
+                     duration = .data$timeStamp - lag(.data$timeStamp),
+                     moveX = .data$pageX - lag(.data$pageX, default = 0),
+                     moveY = .data$pageY - lag(.data$pageY, default = 0),
                      moveXScrollCorrected = .data$moveX,
                      moveYScrollCorrected = .data$moveY) %>%
               bind_rows(actions %>%

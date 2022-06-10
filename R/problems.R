@@ -164,8 +164,6 @@ remove_problems <- function(x, systemInfo = NULL,
 
   # Handling problems ##########################################################
   problems <- grep("^problems", names(x$systemInfo), value = TRUE )
-  removeProblems <- rep(TRUE, length(problems))
-  names(removeProblems) <- problems
   if (length(problems) == 0L) {
     message("No columns identyfing problems has been found.")
     return(x)
@@ -176,6 +174,8 @@ remove_problems <- function(x, systemInfo = NULL,
     message("No problems has been found in the data.")
     return(x)
   }
+  removeProblems <- rep(TRUE, length(problems))
+  names(removeProblems) <- problems
   for (i in problems) {
     currentProblem <- x$systemInfo %>%
       filter(.data[[i]] %in% 1) %>%
