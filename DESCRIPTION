@@ -1,7 +1,7 @@
 Package: logLime
 Type: Package
 Title: Creating process indicators from logs created by logDataLimeSurvey JS applet
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: c(person("Tomasz", "Zoltak",
                     email = "tomek@zozlak.org",
                     role = c("aut", "cre"),

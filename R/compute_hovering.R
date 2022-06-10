@@ -105,7 +105,10 @@ compute_hovering <- function(actions,
                            NA_character_,
                            paste0(.data$target.id, .data$target.tagName)),
            elementType = ifelse(is.na(.data$elementType),
-                                "other", .data$elementType)) %>%
+                                "other", .data$elementType),
+           # a protection against element types not recognized by label_actions()
+           across(any_of(c("questionCode", "subquestionCode", "answerCode")),
+                  ~ifelse(is.na(target), NA_character_, .))) %>%
     group_by(across(c({{respId}}, {{screenId}}))) %>%
     summarise(compute_hovering_survey_screen(cur_data(), pb),
               .groups = "drop")

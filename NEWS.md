@@ -1,3 +1,10 @@
+# logLime 0.1.2 (10.06.2022)
+
+## Bug fixes
+
+-   `compute_hovering()` protects itself against failing because of empty *elementType* while question, subquestion or answer code being recognized (i.e. in situations where internal function `label_actions()` failed to recognize type of survey interface element, typically due to some atypical item format was included in the suvey).
+-   `label_actions()` recognizes *Bootstrap buttons* question format and slightly better labels LI elements.
+
 # logLime 0.1.1 (9.06.2022)
 
 The first usable version of the package.
