@@ -1,0 +1,331 @@
+---
+title: "Drawing log-data"
+author: "Tomasz Żółtak"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Drawing log-data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 6
+)
+```
+
+# Data and setup
+
+We will use the *arrow* library to read large CSV files into R and *dplyr* to perform some data manipulation.
+
+```{r}
+library(logLime)
+library(arrow, warn.conflicts = FALSE)
+library(dplyr, warn.conflicts = FALSE)
+library(ggplot2)
+```
+
+Data we will use are of two types:
+
+1.  Survey results exported from Lime Survey platform to a CSV file (encoded in UTF-8 with BOM).
+    -   In fact the file was created by combining two such files from different surveys.
+    -   We need to read this file to R by ourselves - below it is be imported into a data frame named `surveyResults`.
+        - Function from the *arrow* library is used below to speed up reading the file, but please note that non-default settings are needed to be set to enable reading data containing such long records.
+2.  Two survey structure files exported to TXT files (tab-separated).
+    -   There are two such files because results come from two different surveys.
+    -   We only need to provide names (locations) of these files, as *logLime*'s function may handle reading these files internally.
+
+```{r}
+surveyResusultFile <- "https://tomek.zozlak.org/dataExp5BOM.csv"
+surveyStructurFiles <- c("https://tomek.zozlak.org/limesurvey_survey_745195.txt",
+                         "https://tomek.zozlak.org/limesurvey_survey_817417.txt")
+
+surveyResults <- read_csv_arrow("https://tomek.zozlak.org/dataExp5BOM.csv",
+                                read_options =
+                                  CsvReadOptions$create(block_size = 10^8))
+```
+
+Having the survey results (along wit log-data) read into R code below perform preprocessing, filter out respondent-screens with some common problems identified, computes and adds columns with *relative* positions and distances and finally merge some respondent's characteristics to the data regarding *actions* (events).
+
+```{r}
+# creating log-data object
+logData <- separate_logdata_types(surveyResults %>%
+                                    select(respid, starts_with("log")),
+                                  surveyStructure = surveyStructurFiles,
+                                  questionNamesPrefix = "log")
+# filtering out problematic records (respondent-screens)
+logData <- lapply(logData, semi_join,
+                  y = logData$systemInfo %>%
+                    filter(problemsAnyBroken != 1,
+                           problemsLeftBrowser != 1,
+                           problemsResized != 1,
+                           problemsTimeStamps != 1,
+                           inputsWidth > 0),
+                  by = c("respid", "screen"))
+# computing relative positions and distances
+logData$actions <- compute_relative_positions(logData$actions,
+                                              logData$systemInfo)
+# merging some respondent's characteristics
+logData$actions <- logData$actions %>%
+  left_join(surveyResults %>%
+              select(respid, variant, gender),
+            by = "respid")
+```
+
+Now we may proceed to drawing.
+
+# Drawing heatmaps
+
+One of the commonly used form of visualization of cursor moves data is preparing so-called heat-maps, marking areas of the survey screen that the cursor was pointing at for a long time and areas that were hardly visited (pointed at). Interesting feature of this form of visualization is that it can be used both to illustrate actions of a single respondent and to illustrate aggregated tendencies among group of respondents.
+
+## Data preparation
+
+One may draw heat-maps using function `geom_density2d_filled()` from the *ggplot2* package. However, data prepared by the `separate log data types()` above can not (or, more specifically, should not) be used to create such plots. That's because the *actions* element of a log-data objects contain *mousemove* events of different duration, and while estimating time that pointer was at a given position these duration should be used a weights. But there is no way to provide different weights while computing 2-dimensional densities in *ggplot2*. Because of this data need to be transformed to a different form in which cursor positions will be reported across evenly spaced time points. You may get data of this form by using function `compute_cursor_positions()`:
+
+```{r}
+(cursorPositions <- compute_cursor_positions(logData$actions,
+                                             timeSpan = 250) %>%
+   # also, let's join this data with some respondent's characteristics
+   left_join(surveyResults %>%
+               select(respid, variant, gender),
+             by = "respid"))
+```
+
+Now we are ready to prepare heat-maps.
+
+## Heatmap for a single respondent-screen
+
+Let's start with drawing a heat-map for a single respondent-screen. In the code chunk below screen at which set of question regarding immigrants were shown is selected and a single respondent is sampled.
+
+```{r}
+respCursorPositions <- cursorPositions %>%
+  filter(screen == "immig") %>%
+  filter(respid %in% sample(unique(respid), 1))
+```
+
+Having the data selected you may use *ggplot2* functions to plot a heat-map. Please note, that *relative* positions are used instead of *regular* (*absolute*) ones.
+
+```{r}
+# declaring data and mapping of variables onto axis
+ggplot(respCursorPositions,
+       aes(x = pageX_rel, y = pageY_rel)) +
+  # heat-map itself
+  geom_density2d_filled(contour_var = "density") +
+  # reversing the Y axis because of the difference in coordinates system
+  # between web browsers and plotting packages
+  scale_y_reverse() +
+  # a decoration - marking the area within which INPUT elements were shown
+  geom_vline(xintercept = c(0, 1), color = "white", linetype = "dashed") +
+  geom_hline(yintercept = c(0, 1), color = "white", linetype = "dashed")
+```
+
+The darkest areas indicate no hovering and the lighter it gets, the more time was spent by the cursor over a given area. Please note that values in the legend indicate density, not simply the time (i.e. density is proportional to time, but given in a different unit).
+
+## Several heatmaps on one graph
+
+Let's suppose we want to compare heat-maps for several respondents on one graph. In the code chunk below 4 respondents with explicitly specified ids are selected.
+
+```{r}
+respsCursorPositions <- logData$actions %>%
+  filter(screen == "immig") %>%
+  filter(respid %in% c(988464343, 987844729, 988421695, 988555104))
+```
+
+To put heat-maps describing different respondents on separate panels of the graph, you need to add `facet_wrap()` call - see the last line of the code chunk below.
+
+```{r}
+# declaring data and mapping of variables onto axis
+ggplot(respsCursorPositions,
+       aes(x = pageX_rel, y = pageY_rel)) +
+  # heat-map itself
+  geom_density2d_filled(contour_var = "density") +
+  # reversing the Y axis because of the difference in coordinates system
+  # between web browsers and plotting packages
+  scale_y_reverse(limits = c(NA, -1)) +
+  # a decoration - marking the area within which INPUT elements were shown
+  geom_vline(xintercept = c(0, 1), color = "white", linetype = "dashed") +
+  geom_hline(yintercept = c(0, 1), color = "white", linetype = "dashed") +
+  # placing each respondent on a separate panel
+  facet_wrap(vars(respid))
+```
+
+Please note, that on three out of four panels there is almost nothing visible. How does it happen?
+
+This stems from respondent 988555104, despite clearly being a kind of *straight-liner*, spent a way lot more time on this screen than the three other selected respondents.
+
+Here we come to important decision you always need to make while preparing a set of heat-maps comparing different respondents/groups of respondents: **whether you want to compare absolute time spent over a given areas or to compare over which areas a given respondent/group of respondents spent more time, relatively to the time they spent on a given survey screen**.
+
+Graph above represents the first approach. If you want the second one, you need to change value of the argument `contour_var` in the call to `geom_density2d_filled` to be *"ndensity"*:
+
+```{r}
+# declaring data and mapping of variables onto axis
+ggplot(respsCursorPositions,
+       aes(x = pageX_rel, y = pageY_rel)) +
+  # heat-map itself
+  # please note changed value of the `contour_var` argument
+  geom_density2d_filled(contour_var = "ndensity") +
+  # reversing the Y axis because of the difference in coordinates system
+  # between web browsers and plotting packages
+  scale_y_reverse(limits = c(NA, -1)) +
+  # a decoration - marking the area within which INPUT elements were shown
+  geom_vline(xintercept = c(0, 1), color = "white", linetype = "dashed") +
+  geom_hline(yintercept = c(0, 1), color = "white", linetype = "dashed") +
+  # placing each respondent on a separate panel
+  facet_wrap(vars(respid))
+```
+
+## Heatmaps comparing groups of respondents
+
+Comparing group of respondents using heat-maps is also simple. You need to provide a data frame including all the respondents you want to compare between as data to the `ggplot()` call and then use respondent's characteristics as *faceting* variables. In the code chunk below function `facet_grid()` is used instead of `facet_wrap()` to arrange results in a grid constructed from crossing values of variables *gender* and *variant* (this second variable describes whether question about immigration was presented in the first or in the second block of the questionnaire).
+
+As in the case of comparing specific respondents you have to choose whether you are interested in observing which group spent more time over a given region (then use `contour_var = "density"`) or which regions were more and which less *popular* within different groups (then use `contour_var = "ndensity"`). However, in case of larger groups of respondents differences are typically not so sharp here, as in case of specific respondents.
+
+```{r}
+# density
+# declaring data and mapping of variables onto axis
+ggplot(cursorPositions %>%
+         filter(screen == "immig"),
+       aes(x = pageX_rel, y = pageY_rel)) +
+  # heat-map itself
+  geom_density2d_filled(contour_var = "density") +
+  # reversing the Y axis because of the difference in coordinates system
+  # between web browsers and plotting packages
+  scale_y_reverse(limits = c(NA, -1)) +
+  # a decoration - marking the area within which INPUT elements were shown
+  geom_vline(xintercept = c(0, 1), color = "white", linetype = "dashed") +
+  geom_hline(yintercept = c(0, 1), color = "white", linetype = "dashed") +
+  # defining that graphs should summarize results
+  # grouped by the crossing of variant and gender
+  facet_grid(vars(variant), vars(gender))
+
+# ndensity
+# declaring data and mapping of variables onto axis
+ggplot(cursorPositions %>%
+         filter(screen == "immig"),
+       aes(x = pageX_rel, y = pageY_rel)) +
+  # heat-map itself
+  # please note changed value of the `contour_var` argument
+  geom_density2d_filled(contour_var = "ndensity") +
+  # reversing the Y axis because of the difference in coordinates system
+  # between web browsers and plotting packages
+  scale_y_reverse(limits = c(NA, -1)) +
+  # a decoration - marking the area within which INPUT elements were shown
+  geom_vline(xintercept = c(0, 1), color = "white", linetype = "dashed") +
+  geom_hline(yintercept = c(0, 1), color = "white", linetype = "dashed") +
+  # defining that graphs should summarize results
+  # grouped by the crossing of variant and gender
+  facet_grid(vars(variant), vars(gender))
+```
+
+# Drawing cursor traces and clicks
+
+Sometimes you want to illustrate the cursor trace for a specific respondent-screen. Such a graph will look more informative if you enhance it by marking also position of clicks and if you place position of the survey form INPUT elements in the background. Consequently, you need to prepare few distinct data sets:
+
+```{r}
+# some single respondent's id
+respondent <- 988543469
+# data on cursor trace
+respCursorMoves <- logData$actions %>%
+  filter(screen == "immig",
+         type %in% "mousemove") %>%
+  filter(respid %in% respondent)
+# data on clicks
+respCursorClicks <- logData$actions %>%
+  filter(type %in% "click") %>%
+  semi_join(respCursorMoves,
+            by = c("respid", "screen"))
+# data on INPUT elements' positions
+respInputPositions <- logData$inputPositions %>%
+  semi_join(respCursorMoves,
+            by = c("respid", "screen"))
+```
+
+Having the data prepared you may use *ggplot2* to prepare a graph:
+
+```{r}
+# no data specified, as it will be defined separately for each 'layer' of the plot
+ggplot(mapping = aes(x = pageX_rel, y = pageY_rel)) +
+  # putting INPUT elements into background
+  geom_point(data = respInputPositions,
+             size = 4, color = "darkgrey") +
+  # drawing mouse trace
+  geom_path(data = respCursorMoves,
+            size = 1.2) +
+  # drawing clicks
+  geom_point(data = respCursorClicks,
+             size = 5) +
+  # labeling start and end point
+  geom_label(data = respCursorMoves[c(1, nrow(respCursorMoves)), ] %>%
+               mutate(label = c("start", "end")),
+             mapping = aes(label = label), alpha = 0.7) +
+  # reversing the Y axis because of the difference in coordinates system
+  # between web browsers and plotting packages
+  scale_y_reverse()
+```
+
+# Animating cursor traces and clicks
+
+If you want to animate cursor trace, it is possible by using package *gganimate* (you will also need a package responsible for *rendering* an animation - in this case this will be *gifski*, that prepares a GIF file, although this is not the only possible choice).
+
+```{r}
+library(gifski)
+library(gganimate)
+```
+
+To prepare animation you need to assign a *ggplot* graph to an object:
+
+```{r}
+g1 <- ggplot(NULL,
+       aes(x = pageX_rel, y = pageY_rel)) +
+  # putting INPUT elements into background
+  geom_point(data = respInputPositions,
+             size = 4, color = "darkgrey") +
+  # drawing mouse trace
+  geom_path(data = respCursorMoves,
+            size = 1.2) +
+  # drawing clicks
+  geom_point(data = respCursorClicks,
+             size = 5) +
+  # labeling start and end point
+  geom_label(data = respCursorMoves[c(1, nrow(respCursorMoves)), ] %>%
+               mutate(label = c("start", "end")),
+             mapping = aes(label = label), alpha = 0.7) +
+  # reversing the Y axis because of the difference in coordinates system
+  # between web browsers and plotting packages
+  scale_y_reverse()
+```
+
+Now you may turn this graph into an animation by *adding* type of the animation in the same way as if you will add another graph element. In the case of drawing a cursor trace function `transition_reveal()` will provide the adequate type of animation and while calling it you need to specify that variable *timeStampRel* describes time:
+
+```{r}
+a1 <- g1 + transition_reveal(timeStampRel)
+```
+
+Now you need to *render* animation by calling function `animate()`:
+
+```{r}
+animate(a1, renderer = gifski_renderer())
+```
+
+Sadly, not everything works perfectly - while cursor trace itself is draws correctly, the other *layers* (clicks, start and end labels) are shown in the odd way. For the moment I have not found the way to make *gganimate* works correctly while animating graph with many different *layers* that use different data. So the only solution to get rid of these strange effects is to animate a simpler version of the graph:
+
+```{r}
+a2 <- ggplot(NULL,
+       aes(x = pageX_rel, y = pageY_rel)) +
+  # putting INPUT elements into background
+  geom_point(data = respInputPositions,
+             size = 4, color = "darkgrey") +
+  # drawing mouse trace
+  geom_path(data = respCursorMoves,
+            size = 1.2) +
+  # reversing the Y axis because of the difference in coordinates system
+  # between web browsers and plotting packages
+  scale_y_reverse() +
+  # make it an animation
+  transition_reveal(timeStampRel)
+animate(a2, renderer = gifski_renderer())
+```

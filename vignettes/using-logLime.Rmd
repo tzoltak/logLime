@@ -29,7 +29,7 @@ library(dplyr, warn.conflicts = FALSE)
 Data we will use are of two types:
 
 1.  Survey results exported from Lime Survey platform to a CSV file (encoded in UTF-8 with BOM).
-    -   In fact the file we will was created by combining two such files from different surveys.
+    -   In fact the file was created by combining two such files from different surveys.
     -   We need to read this file to R by ourselves - below it is be imported into a data frame named `surveyResults`.
         - Function from the *arrow* library is used below to speed up reading the file, but please note that non-default settings are needed to be set to enable reading data containing such long records.
 2.  Two survey structure files exported to TXT files (tab-separated).
