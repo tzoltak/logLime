@@ -32,6 +32,10 @@ Having log-data preprocessed you may compute process indicators using the follow
 
 Specific set of indicators is described in a section *returns* in each function documentation.
 
+## Caution
+
+At the moment package works correctly only on log-data collected during surveys that do not enable backward navigation through survey screens. This problem is supposed to be solved in the future. If this is a feature you badly need, pleas contact the author of the package to speed up the developement of the solution.
+
 ## Funding
 
 Package is developed within a project *Understanding response styles in self-report data: consequences, remedies and sources* that is financed by the Polish National Science Center (NCN) research grant ([2019/33/B/HS6/00937](https://projekty.ncn.gov.pl/index.php?projekt_id=446393)).
