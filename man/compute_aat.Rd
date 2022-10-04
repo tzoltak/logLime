@@ -129,9 +129,9 @@ without these two it can not be determined to which subquestion a given
 }
 \section{Functions}{
 \itemize{
-\item \code{compute_aht}: Computing answering time indicators
-}}
+\item \code{compute_aht()}: Computing answering time indicators
 
+}}
 \seealso{
 \code{\link{separate_logdata_types}}
 

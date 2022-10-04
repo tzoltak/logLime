@@ -196,7 +196,7 @@ As it was discussed above *systemInfo* element of a list returned by `separate_l
 logData <- remove_problems(logData)
 ```
 
-Be aware that **the problems identified by variables created by `separate_logdata_types()` may not the only ones you should consider!**
+Be aware that **the problems identified by variables created by `separate_logdata_types()` may not be the only ones you should consider!**
 
 ### Removing data *manually*
 
@@ -243,7 +243,7 @@ logData <- lapply(logData, semi_join, y = noProblems, by = c("respid", "screen")
 
 There are two other functions included in the package that perform some transformation of log-data in order to prepare it for further analysis:
 
--   `compute_relative_positions()` - it enhances data on *actions* (events), specyfically *mosemoves* and *clicks*, by computing positions and move distances *relative* to the position of a given survey screen (extremely located) form INPUT elements. Positions and distances recalculated this way are more comparable between respodnents with different browser window sizes. See section on cursor moves indices for examples of using this function.
+-   `compute_relative_positions()` - it enhances data on *actions* (events), specifically *mosemoves* and *clicks*, by computing positions and move distances *relative* to the position of a given survey screen (extremely located) form INPUT elements. Positions and distances recalculated this way are more comparable between respondents with different browser window sizes. See section on cursor moves indices for examples of using this function.
 -   `compute_cursor_positions()` - it enables to compute cursor position at evenly spaced time points. Data in this form are necessary for example to prepare heat-map graphs illustrating amount of time spent by respondent over the different regions of the survey screen. Example of using this function you will find in the vignette regarding drawing graphs using log-data.
 
 # Storing log-data objects

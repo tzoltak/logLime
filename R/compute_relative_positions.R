@@ -34,8 +34,7 @@ compute_relative_positions <- function(actions,
                                        respId = any_of(c("id", "token", "respid")),
                                        screenId = all_of("screen")) {
   stopifnot(is.data.frame(actions),
-            all(c("type", "pageX", "pageY",
-                  "moveX", "moveY", "duration") %in% names(actions)))
+            all(c("pageX", "pageY") %in% names(actions)))
   respIdColumns <- names(select(actions, {{respId}}))
   screenIdColumns <- names(select(actions, {{screenId}}))
   stopifnot(is.data.frame(systemInfo),
@@ -43,6 +42,8 @@ compute_relative_positions <- function(actions,
             all(screenIdColumns %in% names(systemInfo)),
             all(c("inputsMinPageX", "inputsMinPageY",
                   "inputsWidth", "inputsHeight") %in% names(systemInfo)),
+            all(!(c("inputsMinPageX", "inputsMinPageY",
+                    "inputsWidth", "inputsHeight") %in% names(actions))),
             length(intersect(names(actions), names(systemInfo))) > 0)
   actions %>%
     left_join(systemInfo %>%
@@ -52,11 +53,11 @@ compute_relative_positions <- function(actions,
               by = c(respIdColumns, screenIdColumns)) %>%
     mutate(pageX_rel = (.data$pageX - .data$inputsMinPageX) / .data$inputsWidth,
            pageY_rel = (.data$pageY - .data$inputsMinPageY) / .data$inputsHeight,
-           moveX_rel = .data$moveX / .data$inputsWidth,
-           moveY_rel = .data$moveY / .data$inputsHeight,
+           across(any_of("moveX"), list(rel = ~. / inputsWidth)),
+           across(any_of("moveY"), list(rel = ~. / inputsHeight)),
            across(any_of("moveXScrollCorrected"), list(rel = ~. / inputsWidth)),
            across(any_of("moveYScrollCorrected"), list(rel = ~. / inputsHeight))) %>%
     select(-all_of(c("inputsMinPageX", "inputsMinPageY",
                      "inputsWidth", "inputsHeight"))) %>%
-  return(actions)
+    return()
 }
