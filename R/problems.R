@@ -3,11 +3,16 @@
 #' \code{\link{separate_logdata_types}} and is not exported (i.e. it is not
 #' intended to be called by package users themselves). It identifies possible
 #' problems in log-data and reports for which respondent-screens they occur.
-#' @inheritParams compute_aat
+#' @param actions A data frame containing data regarding \emph{actions} -
+#' typically element \emph{actions} of a list returned by
+#' \code{\link{separate_logdata_types}}.
+#' @inheritParams remove_problems
 #' @return A data frame with columns:
 #' \describe{
 #'   \item{respId}{Column(s) defined by \code{respId}.}
 #'   \item{screenId}{Column(s) defined by \code{screenId}.}
+#'   \item{problemsAnyBroken}{Whether a given respondent-screen cotains any
+#'                            broken records,}
 #'   \item{problemsLeftBrowser}{Whether respondent left browser window (card)
 #'                              while answering a given screen,}
 #'   \item{problemsResized}{Whether respondent changed the size of a browser
@@ -18,32 +23,48 @@
 #'                               of the JavaScript applet - that not recorded
 #'                               this type of events - was used to collect the
 #'                               log-data),}
+#'   \item{problemsNoSubmit}{Whether log-data for a given respondent-screen
+#'                           does not contain a \emph{submit} event (if so, it
+#'                           is most probably because an old version of the
+#'                           JavaScript applet - that not recorded this type of
+#'                           events - was used to collect the log-data),}
 #'   \item{problemsTimeStamps}{Whether there is a discontinuity in values of
 #'                            time-stamps for a given respondent-screen that
 #'                            results in a negative duration of some
 #'                            \emph{mousemove} events (if so, it is most
 #'                            probably because an old version of the JavaScript
 #'                            applet - that used an unreliable method of getting
-#'                            time-stamps - was used to collect the log-data).}
+#'                            time-stamps - was used to collect the log-data),}
+#'   \item{problemsNoActions}{Whether there are no \emph{actions} at all in the
+#'                            recorded log-data for a given respondent-screen.}
 #' }
 #' @importFrom dplyr %>% .data across group_by summarise
-find_problems <- function(actions, respId, screenId) {
+find_problems <- function(actions, systemInfo, respId, screenId) {
+  systemInfo <- systemInfo %>%
+    select({{respId}}, {{screenId}})
   actions %>%
     group_by(across(c({{respId}}, {{screenId}}))) %>%
     summarise(problemsAnyBroken = as.integer(any(.data$broken %in% 1)),
               problemsLeftBrowser = as.integer(any(.data$type %in% "blur")),
               problemsResized = as.integer(any(.data$type %in% "resize")),
               problemsNoPageLoaded = as.integer(!any(.data$type %in% "pageLoaded")),
-              problemsTimeStamps = as.integer(any(.data$duration < 0 & !is.na(.data$duration))),
+              problemsNoSubmit = as.integer(!any(.data$type %in% "submit")),
+              problemsTimeStamps = as.integer(any(.data$duration < 0 & !is.na(.data$duration)) |
+                                                any(.data$timeStampRel < 0 | is.na(.data$timeStampRel))),
               .groups = "drop") %>%
+    bind_rows(systemInfo %>%
+                anti_join(actions, by = names(systemInfo)) %>%
+                mutate(problemsNoActions = 1L)) %>%
+    mutate(across(starts_with("problems"), ~ifelse(is.na(.), 0L, .))) %>%
     return()
 }
 #' @title Removing problems identified while separating log-data
 #' @description Function enables to remove from log-data object prepared by
 #' \code{\link{separate_logdata_types}} those records that were identified
-#' (by this function) to be somehow problematic. Function works interactively
-#' presenting user description of the problem and number of records affected
-#' and enables to choose whether given records should be removed or kept.
+#' (by this function) to be somehow problematic. \strong{Function works
+#' interactively} presenting user description of the problem and number of
+#' records affected and enables to choose whether given records should be
+#' removed or kept.
 #' @param x Either a list returned by \code{\link{separate_logdata_types}} or
 #' element \emph{actions} of such a list. In the latter case also argument
 #' \code{systemInfo} must be provided.
@@ -130,7 +151,7 @@ remove_problems <- function(x, systemInfo = NULL,
     w <- menu(c("Keep them", "Remove them"),
               title = paste0("There are ", format(nMissing, big.mark = "'"),
                              " records (respondent-screens) in the data identyfing problems that can not me matched in the data regarding actions (events).\n",
-                             "This may be due to respondents quiting the survey just at the beginning of a given screen, but it is also possible that the data regarding actions has been somehowew filtered out already. Anyway you may remove them, because no indices can be computed for such respondent-screens.\n\n",
+                             "This may be due to respondents quiting the survey just at the beginning of a given screen, but it is also possible that the data regarding actions has been somehow filtered out already. Anyway you may remove them, because no indices can be computed for such respondent-screens.\n\n",
                              "What do you want to do with these respondent-screens?"))
     if (w == 0L) {
       stop("Procedure aborted.", call. = FALSE)
@@ -196,7 +217,9 @@ remove_problems <- function(x, systemInfo = NULL,
                                     problemsLeftBrowser = " during which respondent has left the browser window (tab) presenting the survey while answering this screen.\n\nYou may keep such respondent-screens if you are interested only in computing number of edits. Think carefully what to do if you are going to compute hovering indices or answering time indices. You should exclude such respondent-screens if you are interested in cursor moves indices.",
                                     problemsResized = " during which respondent resized the browser window.\n\nYou should rather remove such repondent-screens if you are going to compute cursor moves indices. If you want to compute indices regarding timing or number of edits, you may keep them. Decide carefully what to do if you are interested in hovering times (you can compute hovering indices for such respondent-screen but it will be unreasonable to plot for example a heat map for such a respondent-screen).",
                                     problemsNoPageLoaded = " that do not contain a 'pageLoaded' event (this probably means that an older version of the 'logdataLimeSurvey' JavaScript applet was used to collect the log-data).\n\nTypically you may keep such respondent-screens with no harm.",
+                                    problemsNoSubmit = " that do not contain a 'submit' event (this probably means that an older version of the 'logdataLimeSurvey' JavaScript applet was used to collect the log-data).\n\nTypically you may keep such respondent-screens with no harm.",
                                     problemsTimeStamps = " that contain inconsistent time-stamps (this probably stems from the prompt regarding unanswered questions or wrong response format was shown to the respondent while he/she attempted to proceed to the next screen while an older version of the 'logdataLimeSurvey' JavaScript applet was used to collect the log-data).\n\nYou should remove these respondent-screens if you are going to compute any indicators that rely on timing of events (i.e. virtually all with the exception of number of edits).",
+                                    problemsNoActions = " that contain inconsistent time-stamps (this probably stems from the prompt regarding unanswered questions or wrong response format was shown to the respondent while he/she attempted to proceed to the next screen while an older version of the 'logdataLimeSurvey' JavaScript applet was used to collect the log-data).\n\nYou should remove these respondent-screens if you are going to compute any indicators that rely on timing of events (i.e. virtually all with the exception of number of edits).",
                                     paste0("that are identified as including problems by the variable '",
                                            i, "'.")),
                              "\n\nWhat do you want to do with these records?"))

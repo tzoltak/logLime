@@ -4,12 +4,16 @@
 \alias{find_problems}
 \title{Marking problems in data regarding events}
 \usage{
-find_problems(actions, respId, screenId)
+find_problems(actions, systemInfo, respId, screenId)
 }
 \arguments{
 \item{actions}{A data frame containing data regarding \emph{actions} -
 typically element \emph{actions} of a list returned by
 \code{\link{separate_logdata_types}}.}
+
+\item{systemInfo}{A data frame containing data regarding
+\emph{system information} - typically element \code{systemInfo} of a list
+returned by \code{\link{separate_logdata_types}}.}
 
 \item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
 Variable(s) identifying respondent.}
@@ -22,6 +26,8 @@ A data frame with columns:
 \describe{
   \item{respId}{Column(s) defined by \code{respId}.}
   \item{screenId}{Column(s) defined by \code{screenId}.}
+  \item{problemsAnyBroken}{Whether a given respondent-screen cotains any
+                           broken records,}
   \item{problemsLeftBrowser}{Whether respondent left browser window (card)
                              while answering a given screen,}
   \item{problemsResized}{Whether respondent changed the size of a browser
@@ -32,13 +38,20 @@ A data frame with columns:
                               of the JavaScript applet - that not recorded
                               this type of events - was used to collect the
                               log-data),}
+  \item{problemsNoSubmit}{Whether log-data for a given respondent-screen
+                          does not contain a \emph{submit} event (if so, it
+                          is most probably because an old version of the
+                          JavaScript applet - that not recorded this type of
+                          events - was used to collect the log-data),}
   \item{problemsTimeStamps}{Whether there is a discontinuity in values of
                            time-stamps for a given respondent-screen that
                            results in a negative duration of some
                            \emph{mousemove} events (if so, it is most
                            probably because an old version of the JavaScript
                            applet - that used an unreliable method of getting
-                           time-stamps - was used to collect the log-data).}
+                           time-stamps - was used to collect the log-data),}
+  \item{problemsNoActions}{Whether there are no \emph{actions} at all in the
+                           recorded log-data for a given respondent-screen.}
 }
 }
 \description{

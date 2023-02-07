@@ -103,7 +103,10 @@ compute_hovering <- function(actions,
   actions <- actions %>%
     mutate(target = ifelse(is.na(.data$elementType),
                            NA_character_,
-                           paste0(.data$target.id, .data$target.tagName)),
+                           paste0(ifelse(is.na(.data$target.id),
+                                         .data$elementType,
+                                         .data$target.id),
+                                  .data$target.tagName)),
            elementType = ifelse(is.na(.data$elementType),
                                 "other", .data$elementType),
            # a protection against element types not recognized by label_actions()

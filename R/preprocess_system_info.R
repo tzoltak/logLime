@@ -23,6 +23,7 @@
 #'         \code{\link{compute_cursor_indices}}).}
 #' }
 #' @inheritParams preprocess_actions
+#' @inheritParams separate_logdata_types
 #' @param inputPositions A data frame with data on INPUT element positions as
 #' returned by \code{\link{preprocess_input_positions}}.
 #' @return A data frame with columns:
@@ -45,11 +46,12 @@
 #'                       upper-left and the most bottom-right INPUT elements.}
 #' }
 #' @seealso \code{\link{find_problems}} \code{\link{separate_logdata_types}}
-#' @importFrom dplyr %>% .data across filter group_by left_join select summarise
-#' ungroup
-preprocess_system_info <- function(logData, inputPositions, respId, screenId) {
+#' @importFrom dplyr %>% .data across filter group_by left_join n_distinct
+#' select summarise ungroup
+preprocess_system_info <- function(logData, inputPositions, respId, screenId,
+                                   inputsBoxCells) {
   respScreenIdsColumns <- names(select(logData, {{respId}}, {{screenId}}))
-  logData %>%
+  logData <- logData %>%
     filter(.data$type %in% c("browser", "screen")) %>%
     select({{respId}}, {{screenId}}, what = .data$type,
            userAgent = .data$target.tagName, language = .data$target.id,
@@ -62,13 +64,48 @@ preprocess_system_info <- function(logData, inputPositions, respId, screenId) {
               screenWidth = first( .data$width[.data$what %in% "screen"]),
               screenHeight = first(.data$height[.data$what %in% "screen"]),
               .groups = "drop") %>%
-    ungroup() %>%
-    left_join(inputPositions %>%
-                group_by(across(c({{respId}}, {{screenId}}))) %>%
-                summarise(inputsMinPageX = min(.data$pageX),
-                          inputsMinPageY = min(.data$pageY),
-                          inputsWidth = max(.data$pageX) - min(.data$pageX),
-                          inputsHeight = max(.data$pageY) - min(.data$pageY)),
-              by = respScreenIdsColumns) %>%
-    return()
+    ungroup()
+  if (!is.null(inputPositions)) {
+    inputsBox <- inputPositions %>%
+      group_by(across(c({{respId}}, {{screenId}}))) %>%
+      summarise(inputsMinPageX = min(.data$pageX),
+                inputsMinPageY = min(.data$pageY),
+                inputsWidth = max(.data$pageX) - min(.data$pageX),
+                inputsHeight = max(.data$pageY) - min(.data$pageY),
+                nCols = ifelse(all(.data$questionFormat %in% "H"),
+                               n_distinct(.data$subquestionCode),
+                               n_distinct(.data$answerCode)),
+                nRows = ifelse(all(.data$questionFormat %in% "H"),
+                               n_distinct(.data$answerCode),
+                               n_distinct(.data$subquestionCode)),
+                boxType =
+                  ifelse(all(.data$questionFormat %in% c("A", "B", "C", "E",
+                                                         "F", "H", ";", ";")) &
+                           n_distinct(.data$questionId) == 1L,
+                         ifelse(inputsBoxCells, "cells", "inputs"),
+                         "inputs")) %>%
+      mutate(inputsMinPageX =
+               ifelse(.data$boxType == "cells",
+                      .data$inputsMinPageX -
+                        .data$inputsWidth / (.data$nCols - 1) / 2,
+                      .data$inputsMinPageX),
+             inputsMinPageY =
+               ifelse(.data$boxType == "cells",
+                      .data$inputsMinPageY -
+                        .data$inputsHeight / (.data$nRows - 1) / 2,
+                      .data$inputsMinPageY),
+             inputsWidth =
+               ifelse(.data$boxType == "cells",
+                      .data$inputsWidth * .data$nCols / (.data$nCols - 1),
+                      .data$inputsWidth),
+             inputsHeight =
+               ifelse(.data$boxType == "cells",
+                      .data$inputsHeight * .data$nRows / (.data$nRows - 1),
+                      .data$inputsHeight))
+    logData <- logData %>%
+      left_join(inputsBox %>%
+                  select(-any_of(c("nCols", "nRows"))),
+                by = respScreenIdsColumns)
+  }
+  return(logData)
 }

@@ -4,7 +4,13 @@
 \alias{preprocess_system_info}
 \title{Performing preprocessing of system information}
 \usage{
-preprocess_system_info(logData, inputPositions, respId, screenId)
+preprocess_system_info(
+  logData,
+  inputPositions,
+  respId,
+  screenId,
+  inputsBoxCells
+)
 }
 \arguments{
 \item{logData}{A data frame with log-data as returned by
@@ -18,6 +24,13 @@ Variable(s) identifying respondent.}
 
 \item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
 Variable(s) identifying survey screen.}
+
+\item{inputsBoxCells}{A logical value - whether \strong{in a case of
+table-format questions} \code{inputsMinPageX}, \code{inputsMinPageY},
+\code{inputsWidth} and \code{inputsHeight} should be computed with respect to
+boundaries (vertexes) of table cells storing the input elements rather than
+with respect to input element positions. Applied only for table-format
+question that are the only questions on a given page.}
 }
 \value{
 A data frame with columns:

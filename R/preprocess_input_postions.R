@@ -88,6 +88,7 @@ preprocess_input_positions <- function(logData, respId, screenId,
     select({{respId}}, {{screenId}}, .data$target.tagName, .data$target.id,
            .data$target.class, width = .data$which, height = .data$metaKey,
            .data$pageX, .data$pageY)
+  if (nrow(logData) == 0) return(NULL)
   if (all(is.na(logData$pageY))) { # correcting for a bug in early version of the JS applet
     logData <- logData %>%
       mutate(pageY = .data$pageX,
@@ -198,6 +199,7 @@ preprocess_input_positions <- function(logData, respId, screenId,
 #' @importFrom dplyr %>% .data all_of left_join mutate select
 compute_relative_input_positions <- function(inputPositions, systemInfo,
                                              joinBy) {
+  if (is.null(inputPositions)) return(NULL)
   inputPositions %>%
     left_join(systemInfo %>%
                 select(all_of(joinBy),

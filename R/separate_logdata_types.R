@@ -33,6 +33,12 @@
 #' @param questionNamesPrefix A string - prefix of names of variables storing
 #' log-data streams that should be deleted while turning these names into values
 #' of the variable identifying survey screen.
+#' @param inputsBoxCells A logical value - whether \strong{in a case of
+#' table-format questions} \code{inputsMinPageX}, \code{inputsMinPageY},
+#' \code{inputsWidth} and \code{inputsHeight} should be computed with respect to
+#' boundaries (vertexes) of table cells storing the input elements rather than
+#' with respect to input element positions. Applied only for table-format
+#' question that are the only questions on a given page.
 #' @return A list of three data frames with elements named \emph{systemInfo},
 #' \emph{inputPositions} and  \emph{actions}. More information on how these
 #' data frames are constructed you may find in the documentation regarding
@@ -49,11 +55,14 @@
 separate_logdata_types <-
   function(logData, surveyStructure = NULL,
            respId = any_of(c("id", "token", "respid")),
-           questionNamesTo = "screen", questionNamesPrefix = "") {
+           questionNamesTo = "screen", questionNamesPrefix = "",
+           inputsBoxCells = FALSE) {
     stopifnot(is.data.frame(logData),
               is.character(questionNamesTo), length(questionNamesTo) == 1,
               is.character(questionNamesPrefix),
-              length(questionNamesPrefix) == 1)
+              length(questionNamesPrefix) == 1,
+              is.logical(inputsBoxCells), length(inputsBoxCells) == 1,
+              inputsBoxCells %in% c(TRUE, FALSE))
     emptyColumns <- sapply(logData, function(x) {return(all(is.na(x)))})
     emptyColumnNames <- names(logData)[emptyColumns]
     respIdColumns <- names(select(logData, {{respId}}))
@@ -84,7 +93,7 @@ separate_logdata_types <-
                                                  surveyStructure)
     message("Processing system information.")
     systemInfo <- preprocess_system_info(logData, inputPositions, {{respId}},
-                                         all_of(questionNamesTo))
+                                         all_of(questionNamesTo), inputsBoxCells)
 
     inputPositions <- compute_relative_input_positions(inputPositions,
                                                        systemInfo,
@@ -99,7 +108,8 @@ separate_logdata_types <-
                   summarise(lastTimeStampRel = last(.data$timeStampRel),
                             .groups = "drop"),
                 by = c(respIdColumns, questionNamesTo)) %>%
-      left_join(find_problems(logData, {{respId}}, all_of(questionNamesTo)),
+      left_join(find_problems(logData, systemInfo,
+                              {{respId}}, all_of(questionNamesTo)),
                 by = c(respIdColumns, questionNamesTo))
 
     message("\nSeparated data consists of:\n",

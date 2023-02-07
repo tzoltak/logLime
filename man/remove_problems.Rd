@@ -33,9 +33,10 @@ possibly with some rows removed.
 \description{
 Function enables to remove from log-data object prepared by
 \code{\link{separate_logdata_types}} those records that were identified
-(by this function) to be somehow problematic. Function works interactively
-presenting user description of the problem and number of records affected
-and enables to choose whether given records should be removed or kept.
+(by this function) to be somehow problematic. \strong{Function works
+interactively} presenting user description of the problem and number of
+records affected and enables to choose whether given records should be
+removed or kept.
 }
 \details{
 Every column which name starts with \emph{problems} in the

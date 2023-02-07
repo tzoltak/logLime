@@ -10,7 +10,8 @@ separate_logdata_types(
   surveyStructure = NULL,
   respId = any_of(c("id", "token", "respid")),
   questionNamesTo = "screen",
-  questionNamesPrefix = ""
+  questionNamesPrefix = "",
+  inputsBoxCells = FALSE
 )
 }
 \arguments{
@@ -33,6 +34,13 @@ storing log-data streams in the input data).}
 \item{questionNamesPrefix}{A string - prefix of names of variables storing
 log-data streams that should be deleted while turning these names into values
 of the variable identifying survey screen.}
+
+\item{inputsBoxCells}{A logical value - whether \strong{in a case of
+table-format questions} \code{inputsMinPageX}, \code{inputsMinPageY},
+\code{inputsWidth} and \code{inputsHeight} should be computed with respect to
+boundaries (vertexes) of table cells storing the input elements rather than
+with respect to input element positions. Applied only for table-format
+question that are the only questions on a given page.}
 }
 \value{
 A list of three data frames with elements named \emph{systemInfo},

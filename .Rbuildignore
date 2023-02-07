@@ -3,3 +3,4 @@
 ^\.github$
 ^CRAN-RELEASE$
 ^cran-comments.md$
+^TODO.txt

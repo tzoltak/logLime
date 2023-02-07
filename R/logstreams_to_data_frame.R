@@ -44,6 +44,7 @@ logstreams_to_data_frame <- function(logData, respId, questionNamesTo,
     mutate(log = sub(";$", "", log))
   message("  Separating log-streams into columns...")
   logData <- logData %>%
+    check_for_semicolons_in_strings() %>%
     separate(log, into = c("timeStamp", "type", "target.tagName", "target.id",
                            "target.class", "which", "metaKey", "pageX", "pageY"),
              sep = ";", fill = "right")

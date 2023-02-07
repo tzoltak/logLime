@@ -1,0 +1,4 @@
+time to first click
+time spent on a given item - estimated from controls' changes
+funkcja tworząca obiekt PROCDATA
+dodać kontrolę czasu spędzonego poza oknem przeglądarki w compute_aat()
