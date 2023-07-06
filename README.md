@@ -1,5 +1,7 @@
 # logLime
 
+[![DOI](https://zenodo.org/badge/475898719.svg)](https://zenodo.org/badge/latestdoi/475898719)
+
 ## Installation/update
 
 Currently package is not submitted to CRAN. Nevertheless you can easily install it using the *remotes* package:
