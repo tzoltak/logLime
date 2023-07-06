@@ -7,7 +7,8 @@
 compute_hovering(
   actions,
   respId = any_of(c("id", "token", "respid")),
-  screenId = all_of("screen"),
+  screenId = "screen",
+  entryId = any_of("entry"),
   collapseAnswerCellAndControl = TRUE,
   showPB = TRUE
 )
@@ -17,11 +18,17 @@ compute_hovering(
 typically element \emph{actions} of a list returned by
 \code{\link{separate_logdata_types}}.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent.}
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}>  Variable(s)
+identifying respondent.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
+
+\item{entryId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen \emph{entry} (compare \link{separate_returns}).
+Set to \code{c()} to indicate that results should be returned for the whole survey
+screens and not separately for each respondent's entry on a given survey
+screen.}
 
 \item{collapseAnswerCellAndControl}{A logical value indicating
 whether in case of table-format questions answer cells and form controls
@@ -34,15 +41,15 @@ returned data or reported separately. \code{TRUE} by default.}
 \value{
 A data frame with columns:
 \describe{
-  \item{respId}{Column(s) defined by \code{respId}.}
-  \item{screenId}{Column(s) defined by \code{screenId}.}
-  \item{questionCode}{Question code (only if it is present in the input
-                      data).}
-  \item{subquestionCode}{Subquestion code (only if it is present in the input
-                         data).}
-  \item{answerCode}{Answer code (only if it is present in the input data).}
-  \item{elementType}{Type of the survey interface element.}
-  \item{hoverTime}{Total time spent by cursor over the element in seconds.}
+\item{respId}{Column(s) defined by \code{respId}.}
+\item{screenId}{Column(s) defined by \code{screenId}.}
+\item{questionCode}{Question code (only if it is present in the input
+data).}
+\item{subquestionCode}{Subquestion code (only if it is present in the input
+data).}
+\item{answerCode}{Answer code (only if it is present in the input data).}
+\item{elementType}{Type of the survey interface element.}
+\item{hoverTime}{Total time spent by cursor over the element in seconds.}
 }
 }
 \description{
@@ -61,5 +68,5 @@ different types of survey elements, exclude variables \emph{questionCode} and
 \emph{subquestionCode} from the input data frame.
 }
 \seealso{
-\code{\link{separate_logdata_types}}
+\link{separate_logdata_types}
 }

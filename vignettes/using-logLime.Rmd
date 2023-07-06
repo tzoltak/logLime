@@ -41,7 +41,7 @@ surveyResusultFile <- "https://tomek.zozlak.org/dataExp5BOM.csv"
 surveyStructurFiles <- c("https://tomek.zozlak.org/limesurvey_survey_745195.txt",
                          "https://tomek.zozlak.org/limesurvey_survey_817417.txt")
 
-surveyResults <- read_csv_arrow("https://tomek.zozlak.org/dataExp5BOM.csv",
+surveyResults <- read_csv_arrow(surveyResusultFile,
                                 read_options =
                                   CsvReadOptions$create(block_size = 10^8))
 ```

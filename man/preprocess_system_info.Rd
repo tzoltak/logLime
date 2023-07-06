@@ -17,17 +17,17 @@ preprocess_system_info(
 \code{\link{logstreams_to_data_frame}}.}
 
 \item{inputPositions}{A data frame with data on INPUT element positions as
-returned by \code{\link{preprocess_input_positions}}.}
+returned by \link{preprocess_input_positions}.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent.}
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying respondent.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
 
-\item{inputsBoxCells}{A logical value - whether \strong{in a case of
-table-format questions} \code{inputsMinPageX}, \code{inputsMinPageY},
-\code{inputsWidth} and \code{inputsHeight} should be computed with respect to
+\item{inputsBoxCells}{A logical value - whether \strong{in a case of table-format
+questions} \code{inputsMinPageX}, \code{inputsMinPageY}, \code{inputsWidth} and
+\code{inputsHeight} should be computed with respect to
 boundaries (vertexes) of table cells storing the input elements rather than
 with respect to input element positions. Applied only for table-format
 question that are the only questions on a given page.}
@@ -35,49 +35,48 @@ question that are the only questions on a given page.}
 \value{
 A data frame with columns:
 \describe{
-  \item{respId}{Column(s) defined by \code{respId}.}
-  \item{screenId}{Column(s) defined by \code{screenId}.}
-  \item{userAgent}{Value returned by JavaScript navigator.userAgent property.}
-  \item{language}{Value returned by JavaScript navigator.language property.}
-  \item{browserWidth}{Width of the browser window.}
-  \item{browserHeight}{Height of the browser window.}
-  \item{screenWidth}{Screen width.}
-  \item{screenHeight}{Screen height.}
-  \item{inputsMinPageX}{Horizontal position of the most upper-left INPUT
-                        element on a given survey screen.}
-  \item{inputsMinPageY}{Vertical position of the most upper-left INPUT
-                        element on a given survey screen.}
-  \item{inputsWidth}{Width of a rectangle spanned by positions of the most
-                     upper-left and the most bottom-right INPUT elements.}
-  \item{inputsHeight}{Height of a rectangle spanned by positions of the most
-                      upper-left and the most bottom-right INPUT elements.}
+\item{respId}{Column(s) defined by \code{respId}.}
+\item{screenId}{Column(s) defined by \code{screenId}.}
+\item{userAgent}{Value returned by JavaScript navigator.userAgent property.}
+\item{language}{Value returned by JavaScript navigator.language property.}
+\item{browserWidth}{Width of the browser window.}
+\item{browserHeight}{Height of the browser window.}
+\item{screenWidth}{Screen width.}
+\item{screenHeight}{Screen height.}
+\item{inputsMinPageX}{Horizontal position of the most upper-left INPUT
+element on a given survey screen.}
+\item{inputsMinPageY}{Vertical position of the most upper-left INPUT
+element on a given survey screen.}
+\item{inputsWidth}{Width of a rectangle spanned by positions of the most
+upper-left and the most bottom-right INPUT elements.}
+\item{inputsHeight}{Height of a rectangle spanned by positions of the most
+upper-left and the most bottom-right INPUT elements.}
 }
 }
 \description{
-Function is called internally by
-\code{\link{separate_logdata_types}} and is not exported (i.e. it is not
-intended to be called by package users themselves). It selects records
-describing system information (i.e. respondent's browser and screen) and
-performs a preprocessing that includes:
+Function is called internally by \link{separate_logdata_types} and
+is not exported (i.e. it is not intended to be called by package users
+themselves). It selects records describing system information (i.e.
+respondent's browser and screen) and performs a preprocessing that includes:
 \itemize{
-  \item{Renaming columns accordingly to the data they store.}
-  \item{Converting columns that are supposed to store numeric values to
-        a numeric type}
-  \item{Removing duplicates that occurred due to page being reloaded
-        (typically because of some responses were not given to
-        \emph{mandatory} questions or some validation criteria defined with
-        respect to answers were not fulfilled).}
-  \item{Putting data regarding browser and screen into one row (for each
-        respondent-screen).}
-  \item{Including information regarding position of the most upper-left
-        INPUT element used to mark question answers and width and height of
-        a rectangle spanned by positions of the most upper-left and the most
-        bottom-right INPUT elements. This information is useful to perform
-        standardization of cursor moves indices to correct for
-        respondent-specific differences in survey layout (see
-        \code{\link{compute_cursor_indices}}).}
+\item{Renaming columns accordingly to the data they store.}
+\item{Converting columns that are supposed to store numeric values to
+a numeric type}
+\item{Removing duplicates that occurred due to page being reloaded
+(typically because of some responses were not given to
+\emph{mandatory} questions or some validation criteria defined with
+respect to answers were not fulfilled).}
+\item{Putting data regarding browser and screen into one row (for each
+respondent-screen).}
+\item{Including information regarding position of the most upper-left
+INPUT element used to mark question answers and width and height of
+a rectangle spanned by positions of the most upper-left and the most
+bottom-right INPUT elements. This information is useful to perform
+standardization of cursor moves indices to correct for
+respondent-specific differences in survey layout (see
+\link{compute_cursor_indices}).}
 }
 }
 \seealso{
-\code{\link{find_problems}} \code{\link{separate_logdata_types}}
+\link{find_problems}, [separate_logdata_types
 }

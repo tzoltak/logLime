@@ -1,26 +1,26 @@
 #' @title Computing hovering indicators
 #' @description Function sums up time spent by the cursor over specific elements
 #' of the survey screens. If the input data frame contains columns
-#' \emph{questionCode}, \emph{subquestionCode} and \emph{answerCode} (or at
+#' *questionCode*, *subquestionCode* and *answerCode* (or at
 #' least some of them) they will be taken into account while defining distinct
 #' records of the returned results. Otherwise time will be summarized for each
-#' respondent-screen over different values of the \emph{elementType} column.
-#' @inheritParams compute_aat
+#' respondent-screen over different values of the *elementType* column.
+#' @inheritParams compute_cursor_indices
 #' @param collapseAnswerCellAndControl A logical value indicating
 #' whether in case of table-format questions answer cells and form controls
 #' placed inside these cells should be collapsed into one category in the
-#' returned data or reported separately. \code{TRUE} by default.
+#' returned data or reported separately. `TRUE` by default.
 #' @param showPB A logical value indicating whether to show a progress bar.
-#' \code{TRUE} by default.
+#' `TRUE` by default.
 #' @details Please note that you may change the way results are summarized by
 #' selecting a specific subset of variables from a data frame you provide as
-#' the \code{actions} argument. If you want to compute hovering simply over
-#' different types of survey elements, exclude variables \emph{questionCode} and
-#' \emph{subquestionCode} from the input data frame.
+#' the `actions` argument. If you want to compute hovering simply over
+#' different types of survey elements, exclude variables *questionCode* and
+#' *subquestionCode* from the input data frame.
 #' @return A data frame with columns:
 #' \describe{
-#'   \item{respId}{Column(s) defined by \code{respId}.}
-#'   \item{screenId}{Column(s) defined by \code{screenId}.}
+#'   \item{respId}{Column(s) defined by `respId`.}
+#'   \item{screenId}{Column(s) defined by `screenId`.}
 #'   \item{questionCode}{Question code (only if it is present in the input
 #'                       data).}
 #'   \item{subquestionCode}{Subquestion code (only if it is present in the input
@@ -29,14 +29,16 @@
 #'   \item{elementType}{Type of the survey interface element.}
 #'   \item{hoverTime}{Total time spent by cursor over the element in seconds.}
 #' }
-#' @seealso \code{\link{separate_logdata_types}}
-#' @importFrom dplyr %>% .data across all_of any_of bind_rows cur_data distinct
-#' filter group_by last mutate select slice_tail summarise
+#' @seealso [separate_logdata_types]
+#' @importFrom dplyr %>% .data across all_of any_of bind_rows distinct
+#' everything filter group_by last mutate pick reframe select slice_tail
+#' summarise
 #' @importFrom utils txtProgressBar getTxtProgressBar setTxtProgressBar
 #' @export
 compute_hovering <- function(actions,
                              respId = any_of(c("id", "token", "respid")),
-                             screenId = all_of("screen"),
+                             screenId = "screen",
+                             entryId = any_of("entry"),
                              collapseAnswerCellAndControl = TRUE,
                              showPB = TRUE) {
   stopifnot(is.data.frame(actions),
@@ -49,17 +51,17 @@ compute_hovering <- function(actions,
   actions <- ungroup(actions)
   respIdColumns <- names(select(actions, {{respId}}))
   screenIdColumns <- names(select(actions, {{screenId}}))
+  entryIdColumns <- names(select(actions, {{entryId}}))
 
   message("Preprocessing log-data streams.")
   if (!("broken" %in% names(actions))) {
     actions$broken <- 0
   }
   actions <- actions %>%
-    select({{respId}}, {{screenId}},
-           all_of(c("type", "timeStampRel", "broken", "target.id",
-                    "target.tagName", "elementType")),
+    select({{respId}}, {{screenId}}, {{entryId}}, "type", "timeStampRel",
+           "broken", "target.id", "target.tagName", "elementType",
            any_of(c("questionCode", "subquestionCode", "answerCode"))) %>%
-    group_by(across(c({{respId}}, {{screenId}}))) %>%
+    group_by(across(c({{respId}}, {{screenId}}, {{entryId}}))) %>%
     mutate(broken = any(.data$broken != 0),
            brokenTimeStamps = any(.data$timeStampRel < 0))
   actions <- bind_rows(
@@ -74,18 +76,20 @@ compute_hovering <- function(actions,
   if (any(actions$broken | actions$brokenTimeStamps)) {
     nRemoved <- nrow(actions)
     mRemoved <- actions %>%
-      select({{respId}}, {{screenId}}) %>%
+      select({{respId}}, {{screenId}}, {{entryId}}) %>%
       distinct() %>%
       nrow()
     actions <- actions %>%
       filter(!.data$broken, !.data$brokenTimeStamps)
     nRemoved <- nRemoved - nrow(actions)
     mRemoved <- mRemoved - (actions %>%
-                              select({{respId}}, {{screenId}}) %>%
+                              select({{respId}}, {{screenId}}, {{entryId}}) %>%
                               distinct() %>%
                               nrow())
     message(format(mRemoved, big.mark = "'"),
-            " respondent-screens containing broken records (",
+            " respondent-screen",
+            ifelse(length(entryIdColumns) > 0L, "-entrie", ""),
+            "s containing broken records (",
             format(nRemoved, big.mark = "'"),
             " records) were removed before computing hovering indices.\n")
   }
@@ -93,7 +97,7 @@ compute_hovering <- function(actions,
   message("Calculating hovering times:")
   if (showPB) {
     pb <- txtProgressBar(0, actions %>%
-                           select({{respId}}, {{screenId}}) %>%
+                           select({{respId}}, {{screenId}}, {{entryId}}) %>%
                            distinct() %>%
                            nrow(),
                          style = 3)
@@ -112,16 +116,14 @@ compute_hovering <- function(actions,
            # a protection against element types not recognized by label_actions()
            across(any_of(c("questionCode", "subquestionCode", "answerCode")),
                   ~ifelse(is.na(target), NA_character_, .))) %>%
-    group_by(across(c({{respId}}, {{screenId}}))) %>%
-    summarise(compute_hovering_survey_screen(cur_data(), pb),
-              .groups = "drop")
+    group_by(across(c({{respId}}, {{screenId}}, {{entryId}}))) %>%
+    reframe(compute_hovering_survey_screen(pick(everything()), pb))
   if (!is.null(pb)) {
     close(pb)
   }
-  if (nrow(actions) > nrow(distinct(select(actions, -all_of("hoverTime"))))) {
+  if (nrow(actions) > nrow(distinct(select(actions, -"hoverTime")))) {
     actions <- actions %>%
-      group_by(across(c({{respId}}, {{screenId}},
-                        all_of("elementType"),
+      group_by(across(c({{respId}}, {{screenId}}, {{entryId}}, "elementType",
                         any_of(c("questionCode", "subquestionCode",
                                  "answerCode"))))) %>%
       summarise(hoverTime = sum(.data$hoverTime),
@@ -135,31 +137,31 @@ compute_hovering <- function(actions,
                ifelse(.data$elementType %in% "answer control" &
                         any(.data$elementType %in% "answer cell"),
                       "answer cell", .data$elementType)) %>%
-      group_by(across(-all_of("hoverTime"))) %>%
+      group_by(across(-"hoverTime")) %>%
       summarise(hoverTime = sum(.data$hoverTime),
                 .groups = "drop")
   }
 
   actions %>%
     mutate(hoverTime = .data$hoverTime / 1000) %>%
-    select({{respId}}, {{screenId}},
+    select({{respId}}, {{screenId}}, {{entryId}},
            any_of(c("questionCode", "subquestionCode", "answerCode")),
-           all_of(c("elementType", "hoverTime"))) %>%
+           "elementType", "hoverTime") %>%
     return()
 }
 #' @title Computing hovering indicators internals
 #' @description Internal function computing hovering times for a given
 #' respondent-screen. It provides handling of some possible log-stream
-#' inconsistencies (\emph{mousout} not always being preceeded by
-#' \emph{mouseover}).
-#' @param x A data frame containg only \emph{mouseover} and \emph{mouseout}
-#' types of \emph{actions}.
+#' inconsistencies (*mousout* not always being preceeded by
+#' *mouseover*).
+#' @param x A data frame containg only *mouseover* and *mousout* types of
+#' *actions*.
 #' @param pb Optionally a handle to the progress bar object.
 #' @return A data frame.
 #' @noRd
 compute_hovering_survey_screen <- function(x, pb = NULL) {
   objects <- x %>%
-    select(all_of(c("target", "elementType")),
+    select("target", "elementType",
            any_of(c("questionCode", "subquestionCode", "answerCode"))) %>%
     distinct() %>%
     mutate(hoverTime = 0,

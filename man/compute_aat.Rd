@@ -8,7 +8,7 @@
 compute_aat(
   actions,
   respId = any_of(c("id", "token", "respid")),
-  screenId = all_of("screen"),
+  screenId = "screen",
   returnFormat = c("long", "wide"),
   numberOfItems = NULL,
   multipleQuestionsAction = c("exclude", "keep")
@@ -17,7 +17,7 @@ compute_aat(
 compute_aht(
   hoverTimes,
   respId = any_of(c("id", "token", "respid")),
-  screenId = all_of("screen"),
+  screenId = "screen",
   returnFormat = c("long", "wide"),
   numberOfItems = NULL,
   multipleQuestionsAction = c("exclude", "keep")
@@ -28,25 +28,25 @@ compute_aht(
 typically element \emph{actions} of a list returned by
 \code{\link{separate_logdata_types}}.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent.}
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}>  Variable(s)
+identifying respondent.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
 
 \item{returnFormat}{String indicating whether results should be returned in
-a \emph{long} (row is respondent-(sub)question) or in a \emph{wide}
+the \emph{long} (row is respondent-(sub)question) or in the \emph{wide}
 (row is a respondent, there is a separate column for each (sub)question)
 format. Can be abbreviated.}
 
 \item{numberOfItems}{Optionally a data frame containing: survey screen
-identifier(s) (same as provided by \code{screenId}) and a column
-\emph{nItems} specifying number of items on a given screen. The latter will
+identifier(s) (same as provided by \code{screenId}) and a column \code{nItems}
+specifying number of items on a given screen. The latter will
 be used as denominator while computing average answering time indicators in
 their variants labeled \emph{All} (see section on returned results) instead
 of determining these numbers given data provided by the \code{actions} (or
-\code{hoverTimes}) argument. One may use function
-\code{\link{count_number_of_items}} to prepare such a data frame.}
+\code{hoverTimes}) argument. One may use function \link{count_number_of_items}
+to prepare such a data frame.}
 
 \item{multipleQuestionsAction}{String indicating what to do with
 respondent-screens containing more than 1 question - default value
@@ -58,65 +58,63 @@ indices computed also for screens containing many questions (in such a case
 for purpose of counting the number of \emph{items} a question with no
 subquestions defined is treated as a single \emph{item}).}
 
-\item{hoverTimes}{A data frame returned by \code{\link{compute_hovering}}.}
+\item{hoverTimes}{A data frame returned by \link{compute_hovering}.}
 }
 \value{
 If \code{returnFormat} is \emph{long} a data frame with columns:
 \describe{
-  \item{respId}{Column(s) defined by \code{respId}.}
-  \item{screenId}{Column(s) defined by \code{screenId}.}
-  \item{timeToFirstAnswer}{Time to first answer (change of survey form
-                           control for some item).
-                           \strong{Returned only by \code{compute_aat}.}}
-  \item{averageAnsweringTime}{Average time spent on answering a single item
-                              (estimated excluding first item that was
-                              answered on the survey screen), \strong{taking
-                              into account only items that were answered}.
-                              \strong{Returned only by \code{compute_aat}.}
-                              Not returned if the input data do not contain
-                              columns \emph{questionCode} or
-                              \code{subquestionCode}.}
-  \item{pageTimeIndex}{Screen time (\code{totalTime}) divided by the number
-                       of items \strong{that were answered} on a given survey
-                       screen. \strong{Returned only by \code{compute_aat}.}
-                       Not returned if the input data do not contain columns
-                       \emph{questionCode} or \code{subquestionCode}.}
-  \item{averageAnsweringTimeAll}{Average time spent on answering a single
-                                 item (estimated excluding first item that
-                                 was answered on the survey screen), but
-                                 computed by \strong{dividing by the number
-                                 of all the items on a given survey screen
-                                 (irrespective they were answered or
-                                 omitted)}. \strong{Returned only by
-                                 \code{compute_aat}.}}
-  \item{pageTimeIndexAll}{Screen time (\code{totalTime}) \strong{divided by
-                          the number of all the items on a given survey
-                          screen (irrespective they were answered or
-                          omitted)}.}
-  \item{totalTime}{Screen time, i.e. total time spent on the survey screen.
-                   \strong{Returned only by \code{compute_aht}.}}
-  \item{averageHoverTimeAll}{Average time of mouse cursor hovering over
-                             a single item (taking into account both content
-                             and answers), taking into account \strong{all
-                             the items on a given survey screen (irrespective
-                             they were answered or omitted)}.
-                              \strong{Returned only by \code{compute_aht}.}}
+\item{respId}{Column(s) defined by \code{respId}.}
+\item{screenId}{Column(s) defined by \code{screenId}.}
+\item{timeToFirstAnswer}{Time to first answer (change of survey form
+control for some item).
+\strong{Returned only by \code{compute_aat}.}}
+\item{averageAnsweringTime}{Average time spent on answering a single item
+(estimated excluding first item that was
+answered on the survey screen), \strong{taking
+into account only items that were answered}.
+\strong{Returned only by \code{compute_aat}.}
+Not returned if the input data do not contain
+columns \emph{questionCode} or \emph{subquestionCode}.}
+\item{pageTimeIndex}{Screen time (\code{totalTime}) divided by the number
+of items \strong{that were answered} on a given survey
+screen. \strong{Returned only by \code{compute_aat}.}
+Not returned if the input data do not contain columns
+\emph{questionCode} or \emph{subquestionCode}.}
+\item{averageAnsweringTimeAll}{Average time spent on answering a single
+item (estimated excluding first item that
+was answered on the survey screen), but
+computed by \strong{dividing by the number
+of all the items on a given survey screen
+(irrespective they were answered or
+omitted)}. \strong{Returned only by
+\code{compute_aat}.}}
+\item{pageTimeIndexAll}{Screen time (\code{totalTime}) \strong{divided by the number
+of all the items on a given survey screen
+(irrespective they were answered or omitted)}.}
+\item{totalTime}{Screen time, i.e. total time spent on the survey screen.
+\strong{Returned only by \code{compute_aht}.}}
+\item{averageHoverTimeAll}{Average time of mouse cursor hovering over
+a single item (taking into account both content
+and answers), taking into account \strong{all the
+items on a given survey screen (irrespective
+they were answered or omitted)}.
+\strong{Returned only by \code{compute_aht}.}}
 }
 If \code{returnFormat} is \emph{wide}: a data frame with columns:
 \describe{
-  \item{respId}{Column(s) defined by \code{respId}.}
-  \item{index_screen}{Columns named in a convention \emph{index_screen} where
-                      \emph{index} is one of the names listed above with
-                      respect to the \emph{long} format of returned results
-                      and \emph{screen} is value of the column(s) defined by
-                       \code{screenId}.}
+\item{respId}{Column(s) defined by \code{respId}.}
+\item{index_screen}{Columns named in a convention \emph{index_screen} where
+\emph{index} is one of the names listed above with
+respect to the \emph{long} format of returned results
+and \emph{screen} is value of the column(s) defined by
+\code{screenId}.}
 }
 }
 \description{
 Functions enables to compute several indicators describing
 respondent's answering speed using either data on time of changing
-states of the survey form controls (\code{compute_aat}) or previously
-computed (using \code{\link{compute_hovering}}) hovering times.
+states of the survey form controls (\link{compute_aat}) or previously
+computed (using \link{compute_hovering}) hovering times.
 }
 \details{
 Functions discard survey-screens for which there are some broken
@@ -133,7 +131,7 @@ without these two it can not be determined to which subquestion a given
 
 }}
 \seealso{
-\code{\link{separate_logdata_types}}
+\link{separate_logdata_types}, \link{separate_returns}
 
-\code{\link{compute_hovering}}
+\link{compute_aat}
 }

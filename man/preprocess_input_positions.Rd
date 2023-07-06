@@ -16,61 +16,58 @@ preprocess_input_positions(
 \item{logData}{A data frame with log-data as returned by
 \code{\link{logstreams_to_data_frame}}.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent.}
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying respondent.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
 
-\item{surveyStructure}{A data frame storing mapping of
-\emph{SGQA identifiers}  onto question, subquestion and answer codes.}
+\item{surveyStructure}{A data frame storing mapping of \emph{SGQA identifiers}
+onto question, subquestion and answer codes.}
 
 \item{imputeLastPageXY}{A function that will be used to impute position of
 inputs in last subquestions/answers in array-format questions - see
-\emph{Details} section below. It is \code{\link{median}} by default.}
+\emph{Details} section below. It is \link{median} by default.}
 }
 \value{
 A data frame with columns:
 \describe{
-  \item{respId}{Column(s) defined by \code{respId}.}
-  \item{screenId}{Column(s) defined by \code{screenId}.}
-  \item{target.tagName}{Type of an element.}
-  \item{target.id}{Id of an element.}
-  \item{target.class}{CSS classes assigned to an element.}
-  \item{width}{Element width.}
-  \item{height}{Element height.}
-  \item{pageX}{Location of an element on the webpage - horizontal axis.}
-  \item{pageY}{Location of an element on the webpage - vertical axis.}
+\item{respId}{Column(s) defined by \code{respId}.}
+\item{screenId}{Column(s) defined by \code{screenId}.}
+\item{target.tagName}{Type of an element.}
+\item{target.id}{Id of an element.}
+\item{target.class}{CSS classes assigned to an element.}
+\item{width}{Element width.}
+\item{height}{Element height.}
+\item{pageX}{Location of an element on the webpage - horizontal axis.}
+\item{pageY}{Location of an element on the webpage - vertical axis.}
 }
-Additionally, if \code{surveyStructure} argument was provided also with
-columns:
+Additionally, if \code{surveyStructure} argument was provided also with columns:
 \describe{
-  \item{questionId}{Question id (in LimeSurvey database).}
-  \item{questionFormat}{A letter code of a question format - see
-                        \href{https://manual.limesurvey.org/Question_object_types#Current_question_types}{LimeSurvey documentation page}.}
-  \item{questionCode}{Question code.}
-  \item{subquestionCode}{Subquestion code.}
-  \item{answerCode}{Answer code.}
+\item{questionId}{Question id (in LimeSurvey database).}
+\item{questionFormat}{A letter code of a question format - see
+\href{https://manual.limesurvey.org/Question_object_types#Current_question_types}{LimeSurvey documentation page}.}
+\item{questionCode}{Question code.}
+\item{subquestionCode}{Subquestion code.}
+\item{answerCode}{Answer code.}
 }
 }
 \description{
-Function is called internally by
-\code{\link{separate_logdata_types}} and is not exported (i.e. it is not
-intended to be called by package users themselves). It selects records
-describing input elements positions from a data frame storing different
-types of log-data (returned by \code{\link{logstreams_to_data_frame}}) and
-performs a preprocessing that includes:
+Function is called internally by \link{separate_logdata_types} and
+is not exported (i.e. it is not intended to be called by package users
+themselves). It selects records describing input elements positions from
+a data frame storing different types of log-data (returned by
+\link{logstreams_to_data_frame}) and performs a preprocessing that includes:
 \itemize{
-  \item{Converting columns that are supposed to store numeric values to
-        a numeric type}
-  \item{Transforming \code{pageX} and \code{pageY} columns so they describe
-        position of the \strong{center} of the element instead of position
-        of its upper-left corner.}
-  \item{If  \code{surveyStructure} argument is provided, transforming
-        \code{pageX} and \code{pageY} columns \strong{for inputs from
-        array-type questions} so they describe actual position of an element
-        on the page (however, there are some limitations - see \emph{Details}
-        section below).}
+\item{Converting columns that are supposed to store numeric values to
+a numeric type}
+\item{Transforming \code{pageX} and \code{pageY} columns so they describe
+position of the \strong{center} of the element instead of position
+of its upper-left corner.}
+\item{If \code{surveyStructure} argument is provided, transforming
+\code{pageX} and \code{pageY} columns \strong{for inputs from array-type questions}
+so they describe actual position of an element on the page (however,
+there are some limitations - see \emph{Details} section below).}
 }
 Last two transformations make returned data more useful while creating
 backgrounds for plots showing cursor moves.
@@ -86,28 +83,28 @@ questions only if \code{respScreenIds} argument is provided} and then it
 tries to correct reported positions so they describe actual position of INPUT
 elements on the page. However, there are some limitations:
 \itemize{
-  \item{Precise position can be derived for every answer/subquestion except
-        the last ones by subtracting position reported for inputs associated
-        with the next answer/subquestion from position of inputs associated
-        with a given answer/subquestion (and dividing such a difference
-        by 2).}
-  \item{Position of the last answer/subquestion can not be derived and must
-        be imputed. Size of the correction is computed using a function
-        provided by \code{imputeLastPageXY} argument - \code{\link{median}}
-        by default. This function is called on a vector of corrections that
-        were already computed for the other answers/subquestions. With
-        respect to the horizontal axis such imputation typically should be
-        precise because \emph{LimeSurvey} rather creates table cells of the
-        same width in array type questions. \strong{But with respect to the
-        vertical axis, it is nothing more than a lucky guess, however.}}
-  \item{\strong{If there is only one answer or subquestion, position on
-        a respective dimension can not be corrected (because of the lack of
-        data) and it is therefore left unchanged.}}
-  \item{At the moment \strong{no corrections are made for an array
-        dual-scale questions}.}
+\item{Precise position can be derived for every answer/subquestion except
+the last ones by subtracting position reported for inputs associated
+with the next answer/subquestion from position of inputs associated
+with a given answer/subquestion (and dividing such a difference
+by 2).}
+\item{Position of the last answer/subquestion can not be derived and must
+be imputed. Size of the correction is computed using a function
+provided by \code{imputeLastPageXY} argument - \link{median}
+by default. This function is called on a vector of corrections that
+were already computed for the other answers/subquestions. With
+respect to the horizontal axis such imputation typically should be
+precise because \emph{LimeSurvey} rather creates table cells of the
+same width in array type questions. \strong{But with respect to the
+vertical axis, it is nothing more than a lucky guess, however.}}
+\item{\strong{If there is only one answer or subquestion, position on
+a respective dimension can not be corrected (because of the lack of
+data) and it is therefore left unchanged.}}
+\item{At the moment \strong{no corrections are made for an array
+dual-scale questions}.}
 }
 }
 \seealso{
-\code{\link{preprocess_system_info}},
-\code{\link{separate_logdata_types}}
+\link{compute_relative_input_positions}, \link{preprocess_system_info},
+\link{separate_logdata_types}
 }

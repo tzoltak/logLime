@@ -11,7 +11,9 @@ separate_logdata_types(
   respId = any_of(c("id", "token", "respid")),
   questionNamesTo = "screen",
   questionNamesPrefix = "",
-  inputsBoxCells = FALSE
+  inputsBoxCells = FALSE,
+  separateReturns = TRUE,
+  screenReturnThreshold = 1000
 )
 }
 \arguments{
@@ -23,8 +25,8 @@ separate_logdata_types(
 a data frame with such a file already read, or list of data frames with such
 files already read.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent. (You may also list additional variables
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying respondent. (You may also list additional variables
 here, that you want to keep joined with your log-data).}
 
 \item{questionNamesTo}{A string - name of the variable that will identify
@@ -35,12 +37,26 @@ storing log-data streams in the input data).}
 log-data streams that should be deleted while turning these names into values
 of the variable identifying survey screen.}
 
-\item{inputsBoxCells}{A logical value - whether \strong{in a case of
-table-format questions} \code{inputsMinPageX}, \code{inputsMinPageY},
-\code{inputsWidth} and \code{inputsHeight} should be computed with respect to
+\item{inputsBoxCells}{A logical value - whether \strong{in a case of table-format
+questions} \code{inputsMinPageX}, \code{inputsMinPageY}, \code{inputsWidth} and
+\code{inputsHeight} should be computed with respect to
 boundaries (vertexes) of table cells storing the input elements rather than
 with respect to input element positions. Applied only for table-format
 question that are the only questions on a given page.}
+
+\item{separateReturns}{A logical value indicating whether returns to the same
+survey screen (different survey screen \emph{entries}) should be identified by an
+additional id-column in the returned results.}
+
+\item{screenReturnThreshold}{(Applicable only if \code{separateReturns != "no"})
+The smallest number of milliseconds between the \emph{pageLoaded} event directly
+following the \emph{submit} event that will be interpreted as indicating returning
+to a given survey screen after visiting some other screen. If set to \code{Inf},
+returns will be identified only by looking on the sequence of screen visits
+(this have limitations if paradata is not collected on some survey screens)
+\itemize{
+\item see \emph{Details} in \link{separate_returns}.
+}}
 }
 \value{
 A list of three data frames with elements named \emph{systemInfo},
@@ -52,15 +68,15 @@ functions listed below in the \emph{See also} section.
 Function separates raw log-data streams into three separate data
 frames containing:
 \itemize{
-  \item{\emph{System information}: data on respondent's browser, OS,
-        screen and browser window resolution.}
-  \item{Information about the \emph{layout} of the survey screen.
-        Specifically, position of each INPUT element on the page. This
-        information will be useful to standardize cursor moves indicators
-        with respect to the differences in the survey page layout between
-        respondents and also to draw backgrounds to graphs presenting
-        cursor trajectories.}
-  \item{Information about respondent's \emph{actions}.}
+\item{\emph{System information}: data on respondent's browser, OS,
+screen and browser window resolution.}
+\item{Information about the \emph{layout} of the survey screen.
+Specifically, position of each INPUT element on the page. This
+information will be useful to standardize cursor moves indicators
+with respect to the differences in the survey page layout between
+respondents and also to draw backgrounds to graphs presenting
+cursor trajectories.}
+\item{Information about respondent's \emph{actions}.}
 }
 Data frame provided as an input typically comes from reading a CSV file with
 survey results that was previously exported from the LimeSurvey. It should
@@ -69,9 +85,7 @@ to store log-data streams and 2) columns explicitly stated in the
 \code{respId} argument (that need not be only ids, actually).
 }
 \seealso{
-\code{\link{read_survey_structure}}
-\code{\link{logstreams_to_data_frame}}
-\code{\link{preprocess_input_positions}} \code{\link{preprocess_system_info}}
-\code{\link{find_problems}} \code{\link{preprocess_actions}}
-\code{\link{separate_stagnations}}
+\link{read_survey_structure}, \link{logstreams_to_data_frame},
+\link{separate_returns}, \link{preprocess_input_positions}, \link{preprocess_system_info},
+\link{preprocess_actions}, \link{find_problems}, \link{separate_stagnations}
 }

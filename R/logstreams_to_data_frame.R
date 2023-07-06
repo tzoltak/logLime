@@ -1,13 +1,13 @@
 #' @title Transforming a data frame with log-data streams to a data frame in
 #' a long format
-#' @description Function is called internally by
-#' \code{\link{separate_logdata_types}} and is not exported (i.e. it is not
-#' intended to be called by package users themselves). It pivots columns of
-#' a data frame storing log-data streams to a \emph{long} format and then
-#' separates log-data streams into different rows and columns. It performs
-#' \strong{no} log-data consistency checks or additional transformations (like
-#' assuring formats of specific columns) - this is done only afterwards by
-#' another functions (see \code{\link{preprocess_actions}}).
+#' @description Function is called internally by[separate_logdata_types] and
+#' is not exported (i.e. it is not intended to be called by package users
+#' themselves). It pivots columns of a data frame storing log-data streams
+#' to the *long* format and then separates log-data streams into different rows
+#' and columns. It performs **no** log-data consistency checks or additional
+#' transformations (like assuring formats of specific columns) - this is done
+#' only afterwards by other functions (see [preprocess_actions],
+#' [preprocess_system_info] and [preprocess_input_positions]).
 #' @inheritParams separate_logdata_types
 #' @return A data frame with columns:
 #' \describe{
@@ -25,7 +25,7 @@
 #'   \item{pageY}{Location of an event on the webpage - vertical axis.}
 #'   \item{broken}{Flag indicating whether a record is broken.}
 #' }
-#' @seealso \code{\link{separate_logdata_types}}
+#' @seealso [separate_logdata_types], [check_for_semicolons_in_strings]
 #' @importFrom tidyr pivot_longer separate separate_rows
 #' @importFrom dplyr %>% .data across filter inner_join mutate select
 logstreams_to_data_frame <- function(logData, respId, questionNamesTo,

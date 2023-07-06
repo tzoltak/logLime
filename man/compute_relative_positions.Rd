@@ -8,7 +8,7 @@ compute_relative_positions(
   actions,
   systemInfo,
   respId = any_of(c("id", "token", "respid")),
-  screenId = all_of("screen")
+  screenId = "screen"
 )
 }
 \arguments{
@@ -17,30 +17,30 @@ typically element \emph{actions} of a list returned by
 \code{\link{separate_logdata_types}}.}
 
 \item{systemInfo}{A data frame containing data regarding
-\emph{system information} - typically element \code{systemInfo} of a list
-returned by \code{\link{separate_logdata_types}}.}
+\emph{system information} - typically element \emph{systemInfo} of a list
+returned by \link{separate_logdata_types}.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent.}
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}>  Variable(s)
+identifying respondent.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
 }
 \value{
 Input data frame with additional columns:
 \describe{
-  \item{pageX_rel}{\emph{Relative} position of an event on horizontal axis.}
-  \item{pageY_rel}{\emph{Relative} position of an event on vertical axis.}
-  \item{moveX_rel}{\emph{Relative} distance of a move on horizontal axis.}
-  \item{moveY_rel}{\emph{Relative} distance of a move on vertical axis.}
+\item{pageX_rel}{\emph{Relative} position of an event on horizontal axis.}
+\item{pageY_rel}{\emph{Relative} position of an event on vertical axis.}
+\item{moveX_rel}{\emph{Relative} distance of a move on horizontal axis.}
+\item{moveY_rel}{\emph{Relative} distance of a move on vertical axis.}
 }
-Additionally, if \code{moveXScrollCorrected_} and \emph{moveYScrollCorrected}
+Additionally, if \emph{moveXScrollCorrected} and \emph{moveYScrollCorrected}
 columns are available in the input data, there are included columns:
 \describe{
-  \item{moveXScrollCorrected_rel}{\emph{Relative scroll corrected} distance
-                                  of a move on horizontal axis.}
-  \item{moveYScrollCorrected_rel}{\emph{Relative scroll corrected} distance
-                                  of a move on vertical axis.}
+\item{moveXScrollCorrected_rel}{\emph{Relative scroll corrected} distance
+of a move on horizontal axis.}
+\item{moveYScrollCorrected_rel}{\emph{Relative scroll corrected} distance
+of a move on vertical axis.}
 }
 }
 \description{
@@ -51,8 +51,15 @@ positions are better comparable between respondents (with possible
 differences in their hardware and software configurations) and are
 particularly useful for drawing heat-maps or cursor traces.
 }
+\details{
+Please note that relativization is performed using input positions
+recorded at the moment of the first entry of a given respondent on a given
+survey screen, even if there were different \emph{entries} identified in the data.
+If respondent resized browser window between \emph{entries}, relativization will
+no longer be valid - use \link{remove_problems} with argument \code{level = "screen"}
+to protect against this issue.
+}
 \seealso{
-\code{\link{compute_cursor_indices}},
-\code{\link{compute_cursor_positions}},
-\code{\link{separate_logdata_types}}
+\link{compute_cursor_indices}, \link{compute_cursor_positions},
+\link{separate_logdata_types}
 }

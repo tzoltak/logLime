@@ -7,7 +7,8 @@
 compute_cursor_indices(
   actions,
   respId = any_of(c("id", "token", "respid")),
-  screenId = all_of("screen"),
+  screenId = "screen",
+  entryId = c(),
   returnFormat = c("long", "wide")
 )
 }
@@ -16,53 +17,65 @@ compute_cursor_indices(
 typically element \emph{actions} of a list returned by
 \code{\link{separate_logdata_types}}.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent.}
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}>  Variable(s)
+identifying respondent.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
+
+\item{entryId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen \emph{entry} (compare \link{separate_returns}).
+Set to \code{c()} to indicate that results should be returned for the whole survey
+screens and not separately for each respondent's entry on a given survey
+screen.}
 
 \item{returnFormat}{String indicating whether results should be returned in
-a \emph{long} (row is respondent-(sub)question) or in a \emph{wide}
+the \emph{long} (row is respondent-(sub)question) or in the \emph{wide}
 (row is a respondent, there is a separate column for each (sub)question)
 format. Can be abbreviated.}
 }
 \value{
-A data frame with columns:
+If \code{returnFormat} is \emph{long}, a data frame with columns:
 \describe{
-  \item{respId}{Column(s) defined by \code{respId}.}
-  \item{screenId}{Column(s) defined by \code{screenId}.}
-  \item{dX}{Total distance traveled on horizontal axis [px].}
-  \item{dY}{Total distance traveled on vertical axis [px].}
-  \item{vX}{Average horizontal speed [px/s].}
-  \item{vY}{Average vertical speed [px/s].}
-  \item{aX}{Average absolute horizontal acceleration [px/s^2].}
-  \item{aY}{Average absolute vertical acceleration[px/s^2].}
-  \item{flipsX}{Number of \emph{flips} (changing direction of move)
-                on horizontal axis.}
-  \item{flipsY}{Number of \emph{flips} (changing direction of move)
-                on vertical axis.}
-  \item{dX_sc, dY_sc, vX_sc, vY_sc, aX_sc, aY_sc, flipsX_sc, flipsY_sc}{
-        \emph{Scrolling corrected} versions of the aforementioned indices.
-        i.e. computed ruling out cursor moves over the survey screen that
-        occurred because of the other actions than moving a pointing device
-        (in particular: because of scrolling - either using mouse wheel,
-        touchpad gestures or scrolling bar - using arrows to scroll the page
-        or using TAB key to switch between survey form INPUT fields).}
+\item{respId}{Column(s) defined by \code{respId}.}
+\item{screenId}{Column(s) defined by \code{screenId}.}
+\item{entryId}{Column(s) defined by \code{entryId} (if any).}
+\item{dX}{Total distance traveled on horizontal axis [px].}
+\item{dY}{Total distance traveled on vertical axis [px].}
+\item{vX}{Average horizontal speed [px/s].}
+\item{vY}{Average vertical speed [px/s].}
+\item{aX}{Average absolute horizontal acceleration [px/s^2].}
+\item{aY}{Average absolute vertical acceleration [px/s^2].}
+\item{flipsX}{Number of \emph{flips} (changing direction of move)
+on horizontal axis.}
+\item{flipsY}{Number of \emph{flips} (changing direction of move)
+on vertical axis.}
+\item{dX_sc, dY_sc, vX_sc, vY_sc, aX_sc, aY_sc, flipsX_sc, flipsY_sc}{
+\emph{Scrolling corrected} versions of the aforementioned indices.
+i.e. computed ruling out cursor moves over the survey screen that
+occurred because of the other actions than moving a pointing device
+(in particular: because of scrolling - either using mouse wheel,
+touchpad gestures or scrolling bar - using arrows to scroll the page
+or using TAB key to switch between survey form INPUT fields).}
 }
-Additionally, if \code{moveX_rel} and \emph{moveY_rel} columns or
+Additionally, if \emph{moveX_rel} and \emph{moveY_rel} columns or
 \emph{moveXScrollCorrected_rel} and \emph{moveYScrollCorrected} columns are
 available in the input data, there are included columns:
 \describe{
-  \item{dX_rel, dY_rel, vX_rel, vY_rel, aX_rel, aY_rel, dX_screl, dY_screl,
-        vX_screl, vY_screl, aX_screl, aY_screl}{
-        \emph{Relative} versions of the aforementioned indices, i.e. divided
-        by the width or height of a rectangle spanned by the most upper-left
-        and the most bottom-right survey form INPUT element's (used to mark
-        question answers) position on a given survey screen. These ones are
-        better comparable between respondents with different browser window
-        size (see \code{\link{compute_relative_positions}}).}
+\item{dX_rel, dY_rel, vX_rel, vY_rel, aX_rel, aY_rel, dX_screl, dY_screl,
+vX_screl, vY_screl, aX_screl, aY_screl}{
+\emph{Relative} versions of the aforementioned indices, i.e. divided
+by the width or height of a rectangle spanned by the most upper-left
+and the most bottom-right survey form INPUT element's (used to mark
+question answers) position on a given survey screen. These ones are
+better comparable between respondents with different browser window
+size (see \link{compute_relative_positions}).}
 }
+
+If \code{returnFormat} is \emph{wide}, returned data frame will not contain columns
+identifying screen and \emph{entry} (if applies), but values of these variables
+will be appended to column names (separated by "_"), with each column
+reporting the values of a given index for a given screen (or screen-\emph{entry}).
 }
 \description{
 Function computes several indices describing the way respondent
@@ -70,15 +83,14 @@ moves a cursor on a survey screen.
 }
 \details{
 To get also \emph{relative} versions of indices, call
-\code{\link{compute_relative_positions}} on a data frame storing actions
+\link{compute_relative_positions} on the data frame storing actions
 (events) before passing it into the \code{actions} argument.
 
 Please note that values of average absolute acceleration (and only
 these indices!) depends on whether \emph{stagnations} were previously
-separated from \emph{mousemove} events or no - see
-\code{\link{separate_stagnations}} for details.
+separated from \emph{mousemove} events or no - see \link{separate_stagnations}
+for details.
 }
 \seealso{
-\code{\link{separate_logdata_types}},
-\code{\link{compute_relative_positions}}
+\link{separate_logdata_types}, \link{compute_relative_positions}
 }

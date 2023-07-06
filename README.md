@@ -36,7 +36,7 @@ Specific set of indicators is described in a section *returns* in each function 
 
 ## Caution
 
-At the moment package works correctly only on log-data collected during surveys that do not enable backward navigation through survey screens. This problem is supposed to be solved in the future. If this is a feature you badly need, please contact the author of the package to speed up the development of the solution.
+Support for surveys enabling backward navigation through survey screens is still a bit experimental.
 
 ## Funding
 

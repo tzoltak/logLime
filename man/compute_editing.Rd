@@ -7,7 +7,8 @@
 compute_editing(
   actions,
   respId = any_of(c("id", "token", "respid")),
-  screenId = all_of("screen"),
+  screenId = "screen",
+  entryId = c(),
   returnFormat = c("long", "wide")
 )
 }
@@ -16,35 +17,39 @@ compute_editing(
 typically element \emph{actions} of a list returned by
 \code{\link{separate_logdata_types}}.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent.}
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}>  Variable(s)
+identifying respondent.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
+
+\item{entryId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen \emph{entry} (compare \link{separate_returns}).
+Set to \code{c()} to indicate that results should be returned for the whole survey
+screens and not separately for each respondent's entry on a given survey
+screen.}
 
 \item{returnFormat}{String indicating whether results should be returned in
-a \emph{long} (row is respondent-(sub)question) or in a \emph{wide}
+the \emph{long} (row is respondent-(sub)question) or in the \emph{wide}
 (row is a respondent, there is a separate column for each (sub)question)
 format. Can be abbreviated.}
 }
 \value{
 If \code{returnFormat} is \emph{long} a data frame with columns:
 \describe{
-  \item{respId}{Column(s) defined by \code{respId}.}
-  \item{screenId}{Column(s) defined by \code{screenId}.}
-  \item{questionCode}{Code of a question.}
-  \item{subquestionCode}{Code of a subquestion.}
-  \item{edits}{Number of edits.}
+\item{respId}{Column(s) defined by \code{respId}.}
+\item{screenId}{Column(s) defined by \code{screenId}.}
+\item{entryId}{Column(s) defined by \code{entryId} (if any).}
+\item{questionCode}{Code of a question.}
+\item{subquestionCode}{Code of a subquestion.}
+\item{edits}{Number of edits.}
 }
-If \code{returnFormat} is \emph{wide} a data frame with columns:
-\describe{
-  \item{respId}{Column(s) defined by \code{respId}.}
-  \item{screenId}{Column(s) defined by \code{screenId}.}
-  \item{edits_qCode_sqCode}{Columns named in a convention \emph{edits_codes},
-                            where \emph{qCode} is question code and
-                            \emph{sqCode} is subquestion code, storing number
-                            of edits.}
-}
+
+If \code{returnFormat} is \emph{wide}, returned data frame will not contain columns
+identifying screen, \emph{entry} (if applies), question and subquestion, but values
+of these variables will be appended to column names (separated by "_"), with
+each column reporting the number of edits of a given sub(question) for
+a given screen (or screen-\emph{entry}).
 }
 \description{
 Function computes number of edits (i.e. marking or changing an
@@ -53,5 +58,5 @@ answer) for each (sub)question made by each respondent. Be aware that
 so correcting one's response is indicated by number of edits greater than 1.
 }
 \seealso{
-\code{\link{separate_logdata_types}}
+\link{separate_logdata_types}
 }

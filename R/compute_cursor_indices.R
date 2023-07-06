@@ -2,63 +2,75 @@
 #' @description Function computes several indices describing the way respondent
 #' moves a cursor on a survey screen.
 #' @inheritParams compute_aat
-#' @details To get also \emph{relative} versions of indices, call
-#' \code{\link{compute_relative_positions}} on a data frame storing actions
-#' (events) before passing it into the \code{actions} argument.
+#' @param entryId <[tidy-select][dplyr::dplyr_tidy_select]> Variable(s)
+#' identifying survey screen *entry* (compare [separate_returns]).
+#' Set to `c()` to indicate that results should be returned for the whole survey
+#' screens and not separately for each respondent's entry on a given survey
+#' screen.
+#' @details To get also *relative* versions of indices, call
+#' [compute_relative_positions] on the data frame storing actions
+#' (events) before passing it into the `actions` argument.
 #'
 #' Please note that values of average absolute acceleration (and only
-#' these indices!) depends on whether \emph{stagnations} were previously
-#' separated from \emph{mousemove} events or no - see
-#' \code{\link{separate_stagnations}} for details.
-#' @return A data frame with columns:
+#' these indices!) depends on whether *stagnations* were previously
+#' separated from *mousemove* events or no - see [separate_stagnations]
+#' for details.
+#' @return If `returnFormat` is *long*, a data frame with columns:
 #' \describe{
-#'   \item{respId}{Column(s) defined by \code{respId}.}
-#'   \item{screenId}{Column(s) defined by \code{screenId}.}
-#'   \item{dX}{Total distance traveled on horizontal axis [px].}
-#'   \item{dY}{Total distance traveled on vertical axis [px].}
-#'   \item{vX}{Average horizontal speed [px/s].}
-#'   \item{vY}{Average vertical speed [px/s].}
-#'   \item{aX}{Average absolute horizontal acceleration [px/s^2].}
-#'   \item{aY}{Average absolute vertical acceleration[px/s^2].}
-#'   \item{flipsX}{Number of \emph{flips} (changing direction of move)
+#'   \item{respId}{Column(s) defined by `respId`.}
+#'   \item{screenId}{Column(s) defined by `screenId`.}
+#'   \item{entryId}{Column(s) defined by `entryId` (if any).}
+#'   \item{dX}{Total distance traveled on horizontal axis \[px\].}
+#'   \item{dY}{Total distance traveled on vertical axis \[px\].}
+#'   \item{vX}{Average horizontal speed \[px/s\].}
+#'   \item{vY}{Average vertical speed \[px/s\].}
+#'   \item{aX}{Average absolute horizontal acceleration \[px/s^2\].}
+#'   \item{aY}{Average absolute vertical acceleration \[px/s^2\].}
+#'   \item{flipsX}{Number of *flips* (changing direction of move)
 #'                 on horizontal axis.}
-#'   \item{flipsY}{Number of \emph{flips} (changing direction of move)
+#'   \item{flipsY}{Number of *flips* (changing direction of move)
 #'                 on vertical axis.}
 #'   \item{dX_sc, dY_sc, vX_sc, vY_sc, aX_sc, aY_sc, flipsX_sc, flipsY_sc}{
-#'         \emph{Scrolling corrected} versions of the aforementioned indices.
+#'         *Scrolling corrected* versions of the aforementioned indices.
 #'         i.e. computed ruling out cursor moves over the survey screen that
 #'         occurred because of the other actions than moving a pointing device
 #'         (in particular: because of scrolling - either using mouse wheel,
 #'         touchpad gestures or scrolling bar - using arrows to scroll the page
 #'         or using TAB key to switch between survey form INPUT fields).}
 #' }
-#' Additionally, if \code{moveX_rel} and \emph{moveY_rel} columns or
-#' \emph{moveXScrollCorrected_rel} and \emph{moveYScrollCorrected} columns are
+#' Additionally, if *moveX_rel* and *moveY_rel* columns or
+#' *moveXScrollCorrected_rel* and *moveYScrollCorrected* columns are
 #' available in the input data, there are included columns:
 #' \describe{
 #'   \item{dX_rel, dY_rel, vX_rel, vY_rel, aX_rel, aY_rel, dX_screl, dY_screl,
 #'         vX_screl, vY_screl, aX_screl, aY_screl}{
-#'         \emph{Relative} versions of the aforementioned indices, i.e. divided
+#'         *Relative* versions of the aforementioned indices, i.e. divided
 #'         by the width or height of a rectangle spanned by the most upper-left
 #'         and the most bottom-right survey form INPUT element's (used to mark
 #'         question answers) position on a given survey screen. These ones are
 #'         better comparable between respondents with different browser window
-#'         size (see \code{\link{compute_relative_positions}}).}
+#'         size (see [compute_relative_positions]).}
 #' }
-#' @seealso \code{\link{separate_logdata_types}},
-#' \code{\link{compute_relative_positions}}
+#'
+#' If `returnFormat` is *wide*, returned data frame will not contain columns
+#' identifying screen and *entry* (if applies), but values of these variables
+#' will be appended to column names (separated by "_"), with each column
+#' reporting the values of a given index for a given screen (or screen-*entry*).
+#' @seealso [separate_logdata_types], [compute_relative_positions]
 #' @importFrom dplyr %>% .data across all_of any_of filter group_by lag
 #' left_join mutate rename_with summarise
 #' @importFrom stats weighted.mean
 #' @export
 compute_cursor_indices <- function(actions,
                                    respId = any_of(c("id", "token", "respid")),
-                                   screenId = all_of("screen"),
+                                   screenId = "screen",
+                                   entryId = c(),
                                    returnFormat = c("long", "wide")) {
   stopifnot(is.data.frame(actions),
             all(c("type", "moveX", "moveY", "duration") %in% names(actions)))
   respIdColumns <- names(select(actions, {{respId}}))
   screenIdColumns <- names(select(actions, {{screenId}}))
+  entryIdColumns <- names(select(actions, {{entryId}}))
   returnFormat <- match.arg(returnFormat,
                             c("long", "wide"))
   if ("broken" %in% names(actions)) {
@@ -75,12 +87,11 @@ compute_cursor_indices <- function(actions,
   message("Computing indices for individual moves.")
   actions <- actions %>%
     filter(.data$type == "mousemove") %>%
-    select({{respId}}, {{screenId}},
-           all_of(c("moveX", "moveY", "duration")),
+    select({{respId}}, {{screenId}}, {{entryId}}, "moveX", "moveY", "duration",
            any_of(c("moveXScrollCorrected", "moveYScrollCorrected",
                     "moveX_rel", "moveY_rel",
                     "moveXScrollCorrected_rel", "moveYScrollCorrected_rel"))) %>%
-    group_by(across(c({{respId}}, {{screenId}}))) %>%
+    group_by(across(c({{respId}}, {{screenId}}, {{entryId}}))) %>%
     mutate(dX = abs(.data$moveX),
            dY = abs(.data$moveY),
            vX = .data$dX / .data$duration,
@@ -105,6 +116,12 @@ compute_cursor_indices <- function(actions,
              dirY_sc = change_to_last_not0(sign(.data$moveYScrollCorrected)),
              flipsX_sc = as.integer(.data$dirX_sc != lag(.data$dirX_sc)),
              flipsY_sc = as.integer(.data$dirY_sc != lag(.data$dirY_sc)))
+  }
+  if (length(entryIdColumns) > 1L &&
+      (all(c("moveX_rel", "moveY_rel") %in% names(actions)) ||
+       all(c("moveXScrollCorrected_rel",
+             "moveYScrollCorrected_rel") %in% names(actions)))) {
+    message("Please note that relativization is performed using input positions recorded at the time of a given respondent enetering a given screen for the first time.")
   }
   if (all(c("moveX_rel", "moveY_rel") %in% names(actions))) {
     message("Computing relative variants.")
@@ -144,10 +161,12 @@ compute_cursor_indices <- function(actions,
   if (returnFormat == "wide") {
     message("Pivoting results to wide format.")
     actions <- actions %>%
-      pivot_wider(id_cols = respIdColumns, names_from = screenIdColumns,
+      pivot_wider(id_cols = respIdColumns,
+                  names_from = c(screenIdColumns, entryIdColumns),
                   names_sep = "_",
-                  values_from = setdiff(names(actions), c(respIdColumns,
-                                                          screenIdColumns)))
+                  values_from = setdiff(names(actions),
+                                        c(respIdColumns, screenIdColumns,
+                                          entryIdColumns)))
   }
   return(actions)
 }

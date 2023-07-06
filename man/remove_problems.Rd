@@ -8,23 +8,35 @@ remove_problems(
   x,
   systemInfo = NULL,
   respId = any_of(c("id", "token", "respid")),
-  screenId = all_of("screen")
+  screenId = "screen",
+  entryId = any_of("entry"),
+  level = c("screen", "entry")
 )
 }
 \arguments{
-\item{x}{Either a list returned by \code{\link{separate_logdata_types}} or
-element \emph{actions} of such a list. In the latter case also argument
-\code{systemInfo} must be provided.}
+\item{x}{Either a list returned by \link{separate_logdata_types} or element
+\emph{actions} of such a list. In the latter case also argument \code{systemInfo}
+must be provided.}
 
-\item{systemInfo}{A data frame containing data regarding
-\emph{system information} - typically element \code{systemInfo} of a list
-returned by \code{\link{separate_logdata_types}}.}
+\item{systemInfo}{A data frame containing \emph{system information} - typically
+element \emph{systemInfo} of the list returned by \link{separate_logdata_types}.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent.}
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}>  Variable(s)
+identifying respondent.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
+
+\item{entryId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen \emph{entry} (compare \link{separate_returns}).
+Set to \code{c()} to indicate that results should be returned for the whole survey
+screens and not separately for each respondent's entry on a given survey
+screen.}
+
+\item{level}{A string indicating at which \emph{level} records containing problems
+should be excluded - a screen or an \emph{entry} (i.e. visit to a screen). It is
+applicable only if columns identified by \code{entryId} appear in the input data;
+\strong{otherwise screen level will be set automatically}.}
 }
 \value{
 Input data (either a data frame or a list of three data frames)
@@ -32,18 +44,17 @@ possibly with some rows removed.
 }
 \description{
 Function enables to remove from log-data object prepared by
-\code{\link{separate_logdata_types}} those records that were identified
-(by this function) to be somehow problematic. \strong{Function works
-interactively} presenting user description of the problem and number of
-records affected and enables to choose whether given records should be
-removed or kept.
+\link{separate_logdata_types} those records that were identified
+(by this function) to be somehow problematic.
+\strong{Function works interactively} presenting user description of the problem
+and number of records affected and enables to choose whether given records
+should be removed or kept.
 }
 \details{
-Every column which name starts with \emph{problems} in the
-\emph{systemInfo} element of \code{x} or in \code{systemInfo} argument will
-be treated as marking problems in the data.
+Every column which name starts with \emph{problems} in the \emph{systemInfo}
+element of \code{x} or in \code{systemInfo} argument will be treated as marking
+problems in the data.
 }
 \seealso{
-\code{\link{separate_logdata_types}},
-\code{\link{separate_stagnations}}
+\link{separate_logdata_types}, \link{separate_returns}, \link{separate_stagnations}
 }

@@ -1,11 +1,11 @@
 #' @title Reading in text files storing survey structure
 #' @description Function is called internally by
-#' \code{\link{separate_logdata_types}} and is not exported (i.e. it is not
+#' [separate_logdata_types] and is not exported (i.e. it is not
 #' intended to be called by package users themselves). It reads in text
 #' (tab-delimited) files storing survey structure previously exported from the
-#' \emph{LimeSurvey} web-survey platform (if provided with file names) or passes
+#' *LimeSurvey* web-survey platform (if provided with file names) or passes
 #' down a provided data frame.
-#' @param x A character vector with file names \strong{or} a data frame with
+#' @param x A character vector with file names **or** a data frame with
 #' already read survey structure file.
 #' @return A data frame with columns:
 #' \describe{
@@ -14,14 +14,14 @@
 #'   \item{questionId}{Question id (in LimeSurvey database).}
 #'   \item{questionFormat}{A letter code of a question format - see
 #'                         \href{https://manual.limesurvey.org/Question_object_types#Current_question_types}{LimeSurvey documentation page}.}
-#'   \item{SGQA}{Question/subquestion/answer \emph{SGQA identifier} - see
+#'   \item{SGQA}{Question/subquestion/answer *SGQA identifier* - see
 #'               \href{https://manual.limesurvey.org/SGQA_identifier}{LimeSurvey documentation page}.}
 #'   \item{questionCode}{Question code.}
 #'   \item{subquestionCode}{Subquestion code.}
 #'   \item{answerCode}{Answer code.}
 #' }
-#' @seealso \code{\link{separate_logdata_types}}
-#' \code{\link{preprocess_input_positions}} \code{\link{preprocess_actions}}
+#' @seealso [separate_logdata_types], [separate_returns],
+#' [preprocess_input_positions], [preprocess_actions]
 #' @importFrom utils read.delim
 #' @importFrom dplyr %>% .data all_of bind_rows filter left_join mutate
 #' select summarise
@@ -73,7 +73,7 @@ read_survey_structure <- function(x) {
 discard_nonimportant_survey_information <- function(x) {
   names(x) <- sub("^type.?[sS]cale$", "questionFormat", names(x))
   x %>%
-    select(all_of(c("id", "class", "name", "text", "questionFormat"))) %>%
+    select("id", "class", "name", "text", "questionFormat") %>%
     mutate(surveyId = .data$text[.data$name == "sid"]) %>%
     filter(class %in% c("G", "Q", "SQ", "A")) %>%
     return()
@@ -82,7 +82,7 @@ discard_nonimportant_survey_information <- function(x) {
 #' @description Function creates a set of all possible survey interface
 #' elements' ids assigned to survey questions, subquestions and answers.
 #' @param x A data frame describing survey structure.
-#' @return The input data frame with a column \emph{target.id} added.
+#' @return The input data frame with a column *target.id* added.
 #' @noRd
 construct_ids <- function(x) {
   x$groupId <-  x$questionId <- groupId <- questionId <- NA
@@ -100,25 +100,25 @@ construct_ids <- function(x) {
     filter(class %in% "Q") %>%
     mutate(SGQA = paste0(.data$surveyId, "X", .data$groupId, "X",
                          .data$questionId)) %>%
-    select(questionCode = .data$name, .data$questionFormat, .data$SGQA,
-           .data$surveyId, .data$questionId)
+    select(questionCode = "name", "questionFormat", "SGQA", "surveyId",
+           "questionId")
   subquestions <- x %>%
     filter(class %in% "SQ") %>%
     mutate(SGQA = paste0(.data$surveyId, "X", .data$groupId, "X",
                          .data$questionId, .data$name)) %>%
-    select(subquestionCode = .data$name, .data$questionFormat, .data$SGQA,
-           .data$surveyId, .data$questionId) %>%
+    select(subquestionCode = "name", "questionFormat", "SGQA", "surveyId",
+           "questionId") %>%
     left_join(questions %>%
-                select(.data$questionId, .data$questionCode),
+                select("questionId", "questionCode"),
               by = "questionId")
   answers <- x %>%
     filter(class %in% "A") %>%
     mutate(SGQA = paste0(.data$surveyId, "X", .data$groupId, "X",
                          .data$id, .data$name)) %>%
-    select(answerCode = .data$name, .data$questionFormat, .data$SGQA,
-           .data$surveyId, .data$questionId) %>%
+    select(answerCode = "name", "questionFormat", "SGQA", "surveyId",
+           "questionId") %>%
     left_join(questions %>%
-                select(.data$questionId, .data$questionCode),
+                select("questionId", "questionCode"),
               by = "questionId")
   subquestionsAnswers <- x %>%
     filter(class %in% c("SQ", "A"))
@@ -126,7 +126,7 @@ construct_ids <- function(x) {
                                subquestionsAnswers$questionId) %>%
     lapply(function(x) {
       tidyr::expand_grid(subquestionCode = x$name[x$class %in% "SQ"],
-                  answerCode = x$name[x$class %in% "A"]) %>%
+                         answerCode = x$name[x$class %in% "A"]) %>%
         mutate(surveyId = x$surveyId[1],
                groupId = x$groupId[1],
                questionId = x$questionId[1],
@@ -137,11 +137,9 @@ construct_ids <- function(x) {
     mutate(SGQA = paste0(.data$surveyId, "X", .data$groupId, "X",
                          .data$questionIdToSGQA, .data$subquestionCode, "-",
                          .data$answerCode)) %>%
-    select(.data$subquestionCode, .data$answerCode, .data$SGQA, .data$surveyId,
-           .data$questionId) %>%
+    select("subquestionCode", "answerCode", "SGQA", "surveyId", "questionId") %>%
     left_join(questions %>%
-                select(.data$questionId, .data$questionCode,
-                       .data$questionFormat),
+                select("questionId", "questionCode", "questionFormat"),
               by = "questionId")
 
   bind_rows(
@@ -180,8 +178,7 @@ construct_ids <- function(x) {
     answers %>%
       mutate(target.id = paste0("javatbd", .data$SGQA))
   ) %>%
-    select(.data$target.id, .data$surveyId, .data$questionId,
-           .data$questionFormat, .data$SGQA, .data$questionCode,
-           .data$subquestionCode, .data$answerCode) %>%
+    select("target.id", "surveyId", "questionId", "questionFormat", "SGQA",
+           "questionCode", "subquestionCode", "answerCode") %>%
     return()
 }

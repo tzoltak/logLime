@@ -1,7 +1,7 @@
 Package: logLime
 Type: Package
 Title: Creating process indicators from logs created by logDataLimeSurvey JS applet
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(person("Tomasz", "Zoltak",
                     email = "tomek@zozlak.org",
                     role = c("aut", "cre"),
@@ -17,18 +17,18 @@ License: MIT + file LICENSE
 Depends: R (>= 4.0.0)
 Imports:
     tidyr (>= 1.0.0),
-    dplyr (>= 1.0.2)
+    dplyr (>= 1.1.0)
 Suggests:
     arrow,
-    ggplot2,
+    ggplot2 (>= 3.4.0),
+    ggdensity,
     gganimate,
     gifski,
-    testthat,
-    covr,
     knitr,
     rmarkdown
 Encoding: UTF-8
 Language: en-US
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Config/testthat/edition: 3
 VignetteBuilder: knitr

@@ -4,38 +4,37 @@
 \alias{count_number_of_items}
 \title{Counting number of items on survey screens}
 \usage{
-count_number_of_items(x, screenId = all_of("screen"))
+count_number_of_items(x, screenId = "screen")
 }
 \arguments{
 \item{x}{A data frame containing survey form INPUT elements' positions
 (particularly the \emph{inputPositions} element of a list returned by
-\code{\link{separate_logdata_types}}) or some other data frame
-containing survey screen id, \emph{questionCode} and \emph{subquestionCode}
-variables.}
+\link{separate_logdata_types}) or some other data frame containing survey screen
+id, \emph{questionCode} and \emph{subquestionCode} variables.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
 }
 \value{
 A data frame with columns:
 \describe{
-  \item{screenId}{Column(s) defined by \code{screenId}.}
-  \item{nQuestions}{Number of questions on a given survey screen.}
-  \item{nItes}{Number of \emph{items} on a given survey screen.}
+\item{screenId}{Column(s) defined by \code{screenId}.}
+\item{nQuestions}{Number of questions on a given survey screen.}
+\item{nItes}{Number of \emph{items} on a given survey screen.}
 }
 }
 \description{
 This function may be used to prepare the \code{nItems} argument
-to the \code{\link{compute_aat}} or \code{\link{compute_aht}} function call.
+to the \link{compute_aat} or \link{compute_aht} function call.
 
 While counting number of \emph{items}:
 \itemize{
-  \item{In questions containing subquestions each subquestion counts as
-        a single \emph{item}.}
-  \item{Each question that does not contain subquestions counts as a single
-        \emph{item}.}
+\item{In questions containing subquestions each subquestion counts as
+a single \emph{item}.}
+\item{Each question that does not contain subquestions counts as a single
+\emph{item}.}
 }
 }
 \seealso{
-\code{\link{separate_logdata_types}}
+\link{separate_logdata_types}
 }

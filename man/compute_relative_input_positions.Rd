@@ -7,35 +7,29 @@
 compute_relative_input_positions(inputPositions, systemInfo, joinBy)
 }
 \arguments{
-\item{inputPositions}{A data frame returned by
-\code{\link{preprocess_input_positions}}}
+\item{inputPositions}{A data frame returned by \link{preprocess_input_positions}}
 
-\item{systemInfo}{A data frame returned by
-\code{\link{preprocess_system_info}}}
+\item{systemInfo}{A data frame returned by \link{preprocess_system_info}}
 
-\item{joinBy}{A character vector providing columns by which
-\code{inputPositions} and \code{systemInfo} should be joined.}
+\item{joinBy}{A character vector providing columns by which \code{inputPositions}
+and \code{systemInfo} should be joined.}
 }
 \value{
 Input data frame with additional columns:
 \describe{
-  \item{width_rel}{\emph{Relative} width of an INPUT element.}
-  \item{height_rel}{\emph{Relative} height of an INPUT element.}
-  \item{pageX_rel}{\emph{Relative} position of an INPUT element on horizontal
-                   axis.}
-  \item{pageY_rel}{\emph{Relative} position of an INPUT element on vertical
-                   axis.}
+\item{width_rel}{\emph{Relative} width of an INPUT element.}
+\item{height_rel}{\emph{Relative} height of an INPUT element.}
+\item{pageX_rel}{\emph{Relative} position of an INPUT element on horizontal axis.}
+\item{pageY_rel}{\emph{Relative} position of an INPUT element on vertical axis.}
 }
 }
 \description{
-Function is called internally by
-\code{\link{separate_logdata_types}} and is not exported (i.e. it is not
-intended to be called by package users themselves). It calculates
-\emph{relative} (see \code{\link{compute_relative_positions}}) positions
-of the INPUT elements and adds this data to the input data.
+Function is called internally by \link{separate_logdata_types} and
+is not exported (i.e. it is not intended to be called by package users
+themselves). It calculates \emph{relative} (see \link{compute_relative_positions})
+positions of the INPUT elements and adds this data to the input data.
 }
 \seealso{
-\code{\link{preprocess_input_positions}},
-\code{\link{preprocess_system_info}}, \code{\link{separate_logdata_types}},
-\code{\link{compute_relative_positions}}
+\link{preprocess_input_positions}, \link{preprocess_system_info},
+\link{separate_logdata_types}, \link{compute_relative_positions}
 }

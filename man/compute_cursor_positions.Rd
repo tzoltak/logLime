@@ -7,7 +7,8 @@
 compute_cursor_positions(
   actions,
   respId = any_of(c("id", "token", "respid")),
-  screenId = all_of("screen"),
+  screenId = "screen",
+  entryId = any_of("entry"),
   timeSpan = 250
 )
 }
@@ -16,35 +17,42 @@ compute_cursor_positions(
 typically element \emph{actions} of a list returned by
 \code{\link{separate_logdata_types}}.}
 
-\item{respId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying respondent.}
+\item{respId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}>  Variable(s)
+identifying respondent.}
 
-\item{screenId}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-Variable(s) identifying survey screen.}
+\item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen.}
+
+\item{entryId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
+identifying survey screen \emph{entry} (compare \link{separate_returns}).
+Set to \code{c()} to indicate that results should be returned for the whole survey
+screens and not separately for each respondent's entry on a given survey
+screen.}
 
 \item{timeSpan}{Space between time points in results in milliseconds.}
 }
 \value{
 A data frame with columns:
 \describe{
-  \item{respId}{Column(s) defined by \code{respId}.}
-  \item{screenId}{Column(s) defined by \code{screenId}.}
-  \item{timeStampRel}{Time point (in milliseconds, counted from the time of
-                      \emph{pageLoaded} event occurred.)}
-  \item{pageX}{Last recorded cursor position on horizontal axis before
-               a given \emph{timeStampRel}.}
-  \item{pageY}{Last recorded cursor position on vertical axis before
-               a given \emph{timeStampRel}.}
-  \item{pageX_rel}{Last recorded \emph{relative} cursor position
-                   (see \code{\link{compute_relative_positions}}) on
-                   horizontal axis before a given \emph{timeStampRel}.
-                   Included only if there was \emph{pageX_rel} column in the
-                   input data.}
-  \item{pageY_rel}{Last recorded \emph{relative} cursor position
-                   (see \code{\link{compute_relative_positions}}) on
-                   vertical axis before a given \emph{timeStampRel}.
-                   Included only if there was \emph{pageY_rel} column in the
-                   input data.}
+\item{respId}{Column(s) defined by \code{respId}.}
+\item{screenId}{Column(s) defined by \code{screenId}.}
+\item{entryId}{Column(s) defined by \code{entryId} (if any).}
+\item{timeStampRel}{Time point (in milliseconds, counted from the time of
+\emph{pageLoaded} event occurred.)}
+\item{pageX}{Last recorded cursor position on horizontal axis before
+a given \emph{timeStampRel}.}
+\item{pageY}{Last recorded cursor position on vertical axis before
+a given \emph{timeStampRel}.}
+\item{pageX_rel}{Last recorded \emph{relative} cursor position
+(see \link{compute_relative_positions}) on
+horizontal axis before a given \emph{timeStampRel}.
+Included only if there was \emph{pageX_rel} column in the
+input data.}
+\item{pageY_rel}{Last recorded \emph{relative} cursor position
+(see \link{compute_relative_positions}) on
+vertical axis before a given \emph{timeStampRel}.
+Included only if there was \emph{pageY_rel} column in the
+input data.}
 }
 }
 \description{
@@ -52,6 +60,5 @@ Function compute the cursor positions at evenly spaced time
 points to make the returned results useful, for example to draw heat maps.
 }
 \seealso{
-\code{\link{compute_relative_positions}},
-\code{\link{separate_logdata_types}}
+\link{compute_relative_positions}, \link{separate_logdata_types}
 }

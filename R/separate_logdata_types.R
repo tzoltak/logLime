@@ -3,29 +3,29 @@
 #' @description Function separates raw log-data streams into three separate data
 #' frames containing:
 #' \itemize{
-#'   \item{\emph{System information}: data on respondent's browser, OS,
+#'   \item{*System information*: data on respondent's browser, OS,
 #'         screen and browser window resolution.}
-#'   \item{Information about the \emph{layout} of the survey screen.
+#'   \item{Information about the *layout* of the survey screen.
 #'         Specifically, position of each INPUT element on the page. This
 #'         information will be useful to standardize cursor moves indicators
 #'         with respect to the differences in the survey page layout between
 #'         respondents and also to draw backgrounds to graphs presenting
 #'         cursor trajectories.}
-#'   \item{Information about respondent's \emph{actions}.}
+#'   \item{Information about respondent's *actions*.}
 #' }
 #' Data frame provided as an input typically comes from reading a CSV file with
 #' survey results that was previously exported from the LimeSurvey. It should
-#' contain \strong{only} 1) responses to the questions (columns) that were used
+#' contain **only** 1) responses to the questions (columns) that were used
 #' to store log-data streams and 2) columns explicitly stated in the
-#' \code{respId} argument (that need not be only ids, actually).
+#' `respId` argument (that need not be only ids, actually).
 #' @param logData A data frame with log-data streams recorded by the
-#' \emph{logDataLimeSurvey} applet stored in its columns.
+#' *logDataLimeSurvey* applet stored in its columns.
 #' @param surveyStructure Optionally either a name (or vector of names) of a
-#' \emph{LimeSurvey} survey structure file exported in the text (.txt) format or
+#' *LimeSurvey* survey structure file exported in the text (.txt) format or
 #' a data frame with such a file already read, or list of data frames with such
 #' files already read.
-#' @param respId <\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}>
-#' Variable(s) identifying respondent. (You may also list additional variables
+#' @param respId <[tidy-select][dplyr::dplyr_tidy_select]> Variable(s)
+#' identifying respondent. (You may also list additional variables
 #' here, that you want to keep joined with your log-data).
 #' @param questionNamesTo A string - name of the variable that will identify
 #' survey screen (page) in the results (i.e. one storing names of variables
@@ -33,21 +33,29 @@
 #' @param questionNamesPrefix A string - prefix of names of variables storing
 #' log-data streams that should be deleted while turning these names into values
 #' of the variable identifying survey screen.
-#' @param inputsBoxCells A logical value - whether \strong{in a case of
-#' table-format questions} \code{inputsMinPageX}, \code{inputsMinPageY},
-#' \code{inputsWidth} and \code{inputsHeight} should be computed with respect to
+#' @param inputsBoxCells A logical value - whether **in a case of table-format
+#' questions** `inputsMinPageX`, `inputsMinPageY`, `inputsWidth` and
+#' `inputsHeight` should be computed with respect to
 #' boundaries (vertexes) of table cells storing the input elements rather than
 #' with respect to input element positions. Applied only for table-format
 #' question that are the only questions on a given page.
-#' @return A list of three data frames with elements named \emph{systemInfo},
-#' \emph{inputPositions} and  \emph{actions}. More information on how these
+#' @param separateReturns A logical value indicating whether returns to the same
+#' survey screen (different survey screen *entries*) should be identified by an
+#' additional id-column in the returned results.
+#' @param screenReturnThreshold (Applicable only if `separateReturns != "no"`)
+#' The smallest number of milliseconds between the *pageLoaded* event directly
+#' following the *submit* event that will be interpreted as indicating returning
+#' to a given survey screen after visiting some other screen. If set to `Inf`,
+#' returns will be identified only by looking on the sequence of screen visits
+#' (this have limitations if paradata is not collected on some survey screens)
+#' - see *Details* in [separate_returns].
+#' @return A list of three data frames with elements named *systemInfo*,
+#' *inputPositions* and  *actions*. More information on how these
 #' data frames are constructed you may find in the documentation regarding
-#' functions listed below in the \emph{See also} section.
-#' @seealso \code{\link{read_survey_structure}}
-#' \code{\link{logstreams_to_data_frame}}
-#' \code{\link{preprocess_input_positions}} \code{\link{preprocess_system_info}}
-#' \code{\link{find_problems}} \code{\link{preprocess_actions}}
-#' \code{\link{separate_stagnations}}
+#' functions listed below in the *See also* section.
+#' @seealso [read_survey_structure], [logstreams_to_data_frame],
+#' [separate_returns], [preprocess_input_positions], [preprocess_system_info],
+#' [preprocess_actions], [find_problems], [separate_stagnations]
 #' @importFrom tidyr pivot_longer
 #' @importFrom dplyr %>% .data across all_of any_of distinct filter first
 #' group_by last left_join mutate select ungroup
@@ -56,13 +64,21 @@ separate_logdata_types <-
   function(logData, surveyStructure = NULL,
            respId = any_of(c("id", "token", "respid")),
            questionNamesTo = "screen", questionNamesPrefix = "",
-           inputsBoxCells = FALSE) {
+           inputsBoxCells = FALSE,
+           separateReturns = TRUE,
+           screenReturnThreshold = 1000) {
     stopifnot(is.data.frame(logData),
-              is.character(questionNamesTo), length(questionNamesTo) == 1,
+              is.character(questionNamesTo), length(questionNamesTo) == 1L,
+              !is.na(questionNamesTo),
               is.character(questionNamesPrefix),
-              length(questionNamesPrefix) == 1,
-              is.logical(inputsBoxCells), length(inputsBoxCells) == 1,
-              inputsBoxCells %in% c(TRUE, FALSE))
+              length(questionNamesPrefix) == 1, !is.na(questionNamesPrefix),
+              is.logical(inputsBoxCells), length(inputsBoxCells) == 1L,
+              inputsBoxCells %in% c(TRUE, FALSE),
+              is.logical(separateReturns), length(separateReturns) == 1L,
+              separateReturns %in% c(TRUE, FALSE),
+              is.numeric(screenReturnThreshold),
+              length(screenReturnThreshold) == 1L,
+              !is.na(screenReturnThreshold))
     emptyColumns <- sapply(logData, function(x) {return(all(is.na(x)))})
     emptyColumnNames <- names(logData)[emptyColumns]
     respIdColumns <- names(select(logData, {{respId}}))
@@ -87,6 +103,18 @@ separate_logdata_types <-
     message("\nPreprocessing log-data streams:")
     logData <- logstreams_to_data_frame(logData, {{respId}}, questionNamesTo,
                                         questionNamesPrefix)
+    message("Separating returns to survey screens.")
+    if (!all(c("pageLoaded", "submit") %in% logData$type) && separateReturns) {
+      separateReturns <- FALSE
+      warning("Separating returns to survey screens is not possible for log-data collected using 'logdataLimeSurvey' applet in versions earlier than 1.1. Argument `separateReturns` was set to 'no' automatically.")
+    }
+    if (separateReturns) {
+      logData <- separate_returns(logData, {{respId}}, all_of(questionNamesTo),
+                                  screenReturnThreshold)
+    } else {
+      logData <- logData %>%
+        mutate(entry = 1L)
+    }
     message("Processing input positions.")
     inputPositions <- preprocess_input_positions(logData, {{respId}},
                                                  all_of(questionNamesTo),
@@ -104,13 +132,14 @@ separate_logdata_types <-
                                   surveyStructure)
     systemInfo <- systemInfo %>%
       left_join(logData %>%
-                  group_by(across(c({{respId}}, all_of(questionNamesTo)))) %>%
+                  group_by(across(c({{respId}}, all_of(questionNamesTo),
+                                    "entry"))) %>%
                   summarise(lastTimeStampRel = last(.data$timeStampRel),
                             .groups = "drop"),
-                by = c(respIdColumns, questionNamesTo)) %>%
+                by = c(respIdColumns, questionNamesTo, "entry")) %>%
       left_join(find_problems(logData, systemInfo,
-                              {{respId}}, all_of(questionNamesTo)),
-                by = c(respIdColumns, questionNamesTo))
+                              {{respId}}, all_of(questionNamesTo), "entry"),
+                by = c(respIdColumns, questionNamesTo, "entry"))
 
     message("\nSeparated data consists of:\n",
             "- ", systemInfo %>% select({{respId}}) %>% distinct() %>% nrow() %>%
@@ -118,11 +147,19 @@ separate_logdata_types <-
             systemInfo %>% select(all_of(questionNamesTo)) %>% distinct() %>%
               nrow() %>% format(big.mark = "'"), " screens,\n",
             "- ", systemInfo %>% nrow() %>% format(big.mark = "'"),
-            " respondent-screens,\n",
+            " respondent-screen-entries,\n",
             "- ", nrow(logData) %>% format(big.mark = "'"), " actions,\n",
             "  out of which data about ", sum(logData$broken) %>%
               format(big.mark = "'"),
             " is somehow broken.")
+    if (!separateReturns) {
+      systemInfo = systemInfo %>%
+        filter(.data$entry == 1L) %>%
+        select(-"entry")
+      logData = logData %>% select(-"entry")
+    } else {
+      message("\nPlease note that the input positions were recorded only at the moment of a given respondent enetering a given screen for the first time. To protect against issued related with changing browser window size between different survey screen entries, use `remove_problems()` with argument `level' set to 'screen'.")
+    }
 
     return(list(systemInfo = systemInfo,
                 inputPositions = inputPositions,

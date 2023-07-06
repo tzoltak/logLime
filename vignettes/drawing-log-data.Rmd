@@ -27,6 +27,7 @@ library(logLime)
 library(arrow, warn.conflicts = FALSE)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
+library(ggdensity)
 ```
 
 Data we will use are of two types:
@@ -44,7 +45,7 @@ surveyResusultFile <- "https://tomek.zozlak.org/dataExp5BOM.csv"
 surveyStructurFiles <- c("https://tomek.zozlak.org/limesurvey_survey_745195.txt",
                          "https://tomek.zozlak.org/limesurvey_survey_817417.txt")
 
-surveyResults <- read_csv_arrow("https://tomek.zozlak.org/dataExp5BOM.csv",
+surveyResults <- read_csv_arrow(surveyResusultFile,
                                 read_options =
                                   CsvReadOptions$create(block_size = 10^8))
 ```
@@ -114,7 +115,7 @@ Having the data selected you may use *ggplot2* functions to plot a heat-map. Ple
 ggplot(respCursorPositions,
        aes(x = pageX_rel, y = pageY_rel)) +
   # heat-map itself
-  geom_density2d_filled(contour_var = "density") +
+  geom_hdr() +
   # reversing the Y axis because of the difference in coordinates system
   # between web browsers and plotting packages
   scale_y_reverse() +
@@ -142,32 +143,7 @@ To put heat-maps describing different respondents on separate panels of the grap
 ggplot(respsCursorPositions,
        aes(x = pageX_rel, y = pageY_rel)) +
   # heat-map itself
-  geom_density2d_filled(contour_var = "density") +
-  # reversing the Y axis because of the difference in coordinates system
-  # between web browsers and plotting packages
-  scale_y_reverse(limits = c(NA, -1)) +
-  # a decoration - marking the area within which INPUT elements were shown
-  geom_vline(xintercept = c(0, 1), color = "white", linetype = "dashed") +
-  geom_hline(yintercept = c(0, 1), color = "white", linetype = "dashed") +
-  # placing each respondent on a separate panel
-  facet_wrap(vars(respid))
-```
-
-Please note, that on three out of four panels there is almost nothing visible. How does it happen?
-
-This stems from respondent 988555104, despite clearly being a kind of *straight-liner*, spent a way lot more time on this screen than the three other selected respondents.
-
-Here we come to important decision you always need to make while preparing a set of heat-maps comparing different respondents/groups of respondents: **whether you want to compare absolute time spent over a given areas or to compare over which areas a given respondent/group of respondents spent more time, relatively to the time they spent on a given survey screen**.
-
-Graph above represents the first approach. If you want the second one, you need to change value of the argument `contour_var` in the call to `geom_density2d_filled` to be *"ndensity"*:
-
-```{r}
-# declaring data and mapping of variables onto axis
-ggplot(respsCursorPositions,
-       aes(x = pageX_rel, y = pageY_rel)) +
-  # heat-map itself
-  # please note changed value of the `contour_var` argument
-  geom_density2d_filled(contour_var = "ndensity") +
+  geom_hdr() +
   # reversing the Y axis because of the difference in coordinates system
   # between web browsers and plotting packages
   scale_y_reverse(limits = c(NA, -1)) +
@@ -191,25 +167,7 @@ ggplot(cursorPositions %>%
          filter(screen == "immig"),
        aes(x = pageX_rel, y = pageY_rel)) +
   # heat-map itself
-  geom_density2d_filled(contour_var = "density") +
-  # reversing the Y axis because of the difference in coordinates system
-  # between web browsers and plotting packages
-  scale_y_reverse(limits = c(NA, -1)) +
-  # a decoration - marking the area within which INPUT elements were shown
-  geom_vline(xintercept = c(0, 1), color = "white", linetype = "dashed") +
-  geom_hline(yintercept = c(0, 1), color = "white", linetype = "dashed") +
-  # defining that graphs should summarize results
-  # grouped by the crossing of variant and gender
-  facet_grid(vars(variant), vars(gender))
-
-# ndensity
-# declaring data and mapping of variables onto axis
-ggplot(cursorPositions %>%
-         filter(screen == "immig"),
-       aes(x = pageX_rel, y = pageY_rel)) +
-  # heat-map itself
-  # please note changed value of the `contour_var` argument
-  geom_density2d_filled(contour_var = "ndensity") +
+  geom_hdr() +
   # reversing the Y axis because of the difference in coordinates system
   # between web browsers and plotting packages
   scale_y_reverse(limits = c(NA, -1)) +
@@ -254,7 +212,7 @@ ggplot(mapping = aes(x = pageX_rel, y = pageY_rel)) +
              size = 4, color = "darkgrey") +
   # drawing mouse trace
   geom_path(data = respCursorMoves,
-            size = 1.2) +
+            linewidth = 1.2) +
   # drawing clicks
   geom_point(data = respCursorClicks,
              size = 5) +
@@ -311,7 +269,7 @@ Now you need to *render* animation by calling function `animate()`:
 animate(a1, renderer = gifski_renderer())
 ```
 
-Sadly, not everything works perfectly - while cursor trace itself is draws correctly, the other *layers* (clicks, start and end labels) are shown in the odd way. For the moment I have not found the way to make *gganimate* works correctly while animating graph with many different *layers* that use different data. So the only solution to get rid of these strange effects is to animate a simpler version of the graph:
+Sadly, not everything works perfectly - while cursor trace itself is drawn correctly, the other *layers* (clicks, start and end labels) are shown in an odd way. For the moment I have not found the way to make *gganimate* works correctly while animating graph with many different *layers* that use different data. So the only solution to get rid of these strange effects is to animate a simpler version of the graph:
 
 ```{r}
 a2 <- ggplot(NULL,
