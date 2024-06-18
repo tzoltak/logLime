@@ -37,6 +37,7 @@ A data frame with columns:
 \describe{
 \item{respId}{Column(s) defined by \code{respId}.}
 \item{screenId}{Column(s) defined by \code{screenId}.}
+\item{entry}{Entry on the screen.}
 \item{userAgent}{Value returned by JavaScript navigator.userAgent property.}
 \item{language}{Value returned by JavaScript navigator.language property.}
 \item{browserWidth}{Width of the browser window.}
@@ -51,6 +52,15 @@ element on a given survey screen.}
 upper-left and the most bottom-right INPUT elements.}
 \item{inputsHeight}{Height of a rectangle spanned by positions of the most
 upper-left and the most bottom-right INPUT elements.}
+\item{boxType}{"cells", if function was called with argument
+\code{inputsBoxCells = FALSE} and "inputs" otherwise.}
+\item{lastTimeStampRel}{Value of the last time stamp recorded during
+a given screen entry minus value of the first
+time stamp recorded during a given screen entry
+(i.e., if there were no problems with data
+collection, the duration of a given screen entry).}
+\item{problems...}{See the description of columns returned by
+\link{find_problems}}
 }
 }
 \description{
@@ -78,5 +88,5 @@ respondent-specific differences in survey layout (see
 }
 }
 \seealso{
-\link{find_problems}, [separate_logdata_types
+\link{find_problems}, \link{separate_logdata_types}
 }

@@ -81,7 +81,8 @@ preprocess_actions <- function(logData, respId, screenId,
   # a cut "undefined" in some broken records - that's why suppressWarnings()
   logData <- suppressWarnings(
     logData %>%
-      filter(!(.data$type %in% c("browser", "screen", "input_position"))) %>%
+      filter(!(.data$type %in% c("browser", "screen", "input_position")),
+             !.data$timeStamp == -1) %>%
       mutate(across(c("target.tagName", "target.id", "target.class", "which",
                       "metaKey", "pageX", "pageY"),
                     ~if_else(. %in% c("", "undefined"), NA_character_, .)),

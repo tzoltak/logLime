@@ -41,9 +41,12 @@ surveyResusultFile <- "https://tomek.zozlak.org/dataExp5BOM.csv"
 surveyStructurFiles <- c("https://tomek.zozlak.org/limesurvey_survey_745195.txt",
                          "https://tomek.zozlak.org/limesurvey_survey_817417.txt")
 
+timeoutDefault <- getOption("timeout")
+options(timeout = Inf)
 surveyResults <- read_csv_arrow(surveyResusultFile,
                                 read_options =
                                   CsvReadOptions$create(block_size = 10^8))
+options(timeout = timeoutDefault)
 ```
 
 Survey results include different types of variables:

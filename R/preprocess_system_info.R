@@ -29,6 +29,7 @@
 #' \describe{
 #'   \item{respId}{Column(s) defined by `respId`.}
 #'   \item{screenId}{Column(s) defined by `screenId`.}
+#'   \item{entry}{Entry on the screen.}
 #'   \item{userAgent}{Value returned by JavaScript navigator.userAgent property.}
 #'   \item{language}{Value returned by JavaScript navigator.language property.}
 #'   \item{browserWidth}{Width of the browser window.}
@@ -43,8 +44,17 @@
 #'                      upper-left and the most bottom-right INPUT elements.}
 #'   \item{inputsHeight}{Height of a rectangle spanned by positions of the most
 #'                       upper-left and the most bottom-right INPUT elements.}
+#'   \item{boxType}{"cells", if function was called with argument
+#'                  `inputsBoxCells = FALSE` and "inputs" otherwise.}
+#'   \item{lastTimeStampRel}{Value of the last time stamp recorded during
+#'                           a given screen entry minus value of the first
+#'                           time stamp recorded during a given screen entry
+#'                           (i.e., if there were no problems with data
+#'                           collection, the duration of a given screen entry).}
+#'   \item{problems...}{See the description of columns returned by
+#'                      [find_problems]}
 #' }
-#' @seealso [find_problems], [separate_logdata_types
+#' @seealso [find_problems], [separate_logdata_types]
 #' @importFrom dplyr %>% .data across filter group_by left_join n n_distinct
 #' select summarise ungroup
 preprocess_system_info <- function(logData, inputPositions, respId, screenId,

@@ -1,3 +1,9 @@
+# logLime 0.3.1 (10.04.2024)
+
+## New features
+
+-   `separate_logdata_types()` deals with some additional information about screen layout that was written to the logstreams. Technically, any record having timestamp set to -1 that is not of the types 'browser', 'screen' or 'input_position' will be put into an additional element of the returned list, named *additionalInformation*. If no such data is present in the logstreams, this additional element will not be added to the returned list.
+
 # logLime 0.3.0 (5.07.2023)
 
 ## New features

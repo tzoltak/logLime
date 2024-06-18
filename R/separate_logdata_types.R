@@ -119,6 +119,9 @@ separate_logdata_types <-
     inputPositions <- preprocess_input_positions(logData, {{respId}},
                                                  all_of(questionNamesTo),
                                                  surveyStructure)
+    otherInformation <- logData %>%
+      filter(.data$timeStamp == -1,
+             !(.data$type %in% c("browser", "screen", "input_position")))
     message("Processing system information.")
     systemInfo <- preprocess_system_info(logData, inputPositions, {{respId}},
                                          all_of(questionNamesTo), inputsBoxCells)
@@ -161,7 +164,11 @@ separate_logdata_types <-
       message("\nPlease note that the input positions were recorded only at the moment of a given respondent enetering a given screen for the first time. To protect against issued related with changing browser window size between different survey screen entries, use `remove_problems()` with argument `level' set to 'screen'.")
     }
 
-    return(list(systemInfo = systemInfo,
-                inputPositions = inputPositions,
-                actions = logData))
+    results <- list(systemInfo = systemInfo,
+                    inputPositions = inputPositions,
+                    actions = logData)
+    if (nrow(otherInformation) > 0L) {
+      results$otherInformation <- otherInformation
+    }
+    return(results)
 }

@@ -45,9 +45,12 @@ surveyResusultFile <- "https://tomek.zozlak.org/dataExp5BOM.csv"
 surveyStructurFiles <- c("https://tomek.zozlak.org/limesurvey_survey_745195.txt",
                          "https://tomek.zozlak.org/limesurvey_survey_817417.txt")
 
-surveyResults <- read_csv_arrow(surveyResusultFile,
+timeoutDefault <- getOption("timeout")
+options(timeout = Inf)
+surveyResults <- read_csv_arrow(url(surveyResusultFile),
                                 read_options =
                                   CsvReadOptions$create(block_size = 10^8))
+options(timeout = timeoutDefault)
 ```
 
 Having the survey results (along wit log-data) read into R code below perform preprocessing, filter out respondent-screens with some common problems identified, computes and adds columns with *relative* positions and distances and finally merge some respondent's characteristics to the data regarding *actions* (events).
@@ -244,7 +247,7 @@ g1 <- ggplot(NULL,
              size = 4, color = "darkgrey") +
   # drawing mouse trace
   geom_path(data = respCursorMoves,
-            size = 1.2) +
+            linewidth = 1.2) +
   # drawing clicks
   geom_point(data = respCursorClicks,
              size = 5) +
