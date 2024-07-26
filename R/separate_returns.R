@@ -5,13 +5,12 @@
 #' time a given screen was visited by a given respondent while a given event
 #' occurred.
 #' @inheritParams preprocess_actions
-#' @param screenReturnThreshold (Applicable only if `separateReturns != "no"`)
-#' The smallest number of milliseconds between the *pageLoaded* event directly
-#' following the *submit* event that will be interpreted as indicating returning
-#' to a given survey screen after visiting some other screen. If set to `Inf`,
-#' returns will be identified only by looking on the sequence of screen visits
-#' (this have limitations if paradata is not collected on some survey screens)
-#' - see *Details* section below.
+#' @param screenReturnThreshold The smallest number of milliseconds between the
+#' *pageLoaded* event directly following the *submit* event that will be
+#' interpreted as indicating returning to a given survey screen after visiting
+#' some other screen. If set to `Inf`, returns will be identified only by
+#' looking on the sequence of screen visits (this have limitations if paradata
+#' is not collected on some survey screens) - see *Details* section below.
 #' @details
 #' Identification of returns may be performed in two ways (each with its own
 #' limitations):
@@ -66,7 +65,7 @@ separate_returns <- function(logData, respId, screenId,
               type = "artificialScreen",
               .groups = "drop") %>%
     filter(.data$submitLoaded %in% TRUE,
-           .data$timeStampDiff > 1000) %>%
+           .data$timeStampDiff > screenReturnThreshold) %>%
     mutate(across({{screenId}}, ~ "___artificialPseudoScreen___")) %>%
     select({{respId}}, {{screenId}}, "type", "timeStamp")
 

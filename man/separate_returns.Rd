@@ -16,15 +16,12 @@ identifying respondent.}
 \item{screenId}{<\link[dplyr:dplyr_tidy_select]{tidy-select}> Variable(s)
 identifying survey screen.}
 
-\item{screenReturnThreshold}{(Applicable only if \code{separateReturns != "no"})
-The smallest number of milliseconds between the \emph{pageLoaded} event directly
-following the \emph{submit} event that will be interpreted as indicating returning
-to a given survey screen after visiting some other screen. If set to \code{Inf},
-returns will be identified only by looking on the sequence of screen visits
-(this have limitations if paradata is not collected on some survey screens)
-\itemize{
-\item see \emph{Details} section below.
-}}
+\item{screenReturnThreshold}{The smallest number of milliseconds between the
+\emph{pageLoaded} event directly following the \emph{submit} event that will be
+interpreted as indicating returning to a given survey screen after visiting
+some other screen. If set to \code{Inf}, returns will be identified only by
+looking on the sequence of screen visits (this have limitations if paradata
+is not collected on some survey screens) - see \emph{Details} section below.}
 }
 \description{
 Function is called internally by \link{separate_logdata_types} and

@@ -1,3 +1,10 @@
+# logLime 0.3.2 (27.08.2024)
+
+## Bug fixes
+
+-   `separate_returns()` makes use of the `screenReturnThreshold` instead of using a fixed threshold of 1000 ms.
+-   Few typos in messages.
+
 # logLime 0.3.1 (10.04.2024)
 
 ## New features

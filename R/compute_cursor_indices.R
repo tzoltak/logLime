@@ -121,7 +121,7 @@ compute_cursor_indices <- function(actions,
       (all(c("moveX_rel", "moveY_rel") %in% names(actions)) ||
        all(c("moveXScrollCorrected_rel",
              "moveYScrollCorrected_rel") %in% names(actions)))) {
-    message("Please note that relativization is performed using input positions recorded at the time of a given respondent enetering a given screen for the first time.")
+    message("Please note that relativization is performed using input positions recorded at the time of a given respondent entering a given screen for the first time.")
   }
   if (all(c("moveX_rel", "moveY_rel") %in% names(actions))) {
     message("Computing relative variants.")

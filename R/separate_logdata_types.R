@@ -161,7 +161,7 @@ separate_logdata_types <-
         select(-"entry")
       logData = logData %>% select(-"entry")
     } else {
-      message("\nPlease note that the input positions were recorded only at the moment of a given respondent enetering a given screen for the first time. To protect against issued related with changing browser window size between different survey screen entries, use `remove_problems()` with argument `level' set to 'screen'.")
+      message("\nPlease note that the input positions were recorded only at the moment of a given respondent entering a given screen for the first time. To protect against issued related with changing browser window size between different survey screen entries, use `remove_problems()` with argument `level' set to 'screen'.")
     }
 
     results <- list(systemInfo = systemInfo,

@@ -51,7 +51,7 @@ compute_relative_positions <- function(actions,
                     "inputsWidth", "inputsHeight") %in% names(actions))),
             length(intersect(names(actions), names(systemInfo))) > 0)
   if ("entry" %in% names(actions)) {
-    message("\nPlease note that the input positions, according to which the relativization will be performed, were recorded only at the moment of a given respondent enetering a given screen for the first time.")
+    message("\nPlease note that the input positions, according to which the relativization will be performed, were recorded only at the moment of a given respondent entering a given screen for the first time.")
   }
   actions %>%
     left_join(systemInfo %>%
