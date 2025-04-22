@@ -1,3 +1,9 @@
+# logLime 0.3.3 (18.04.2025)
+
+## Bug fixes
+
+-   `remove_problems()` accepts argument `x` to be a list with more than 3 elements, nevertheless it ignores (does not remove anything from) elements of `x` (if it is a list) other than "systemInfo", "inputPositions" or "actions", if they exist (informing user about it by throwing a warning).
+
 # logLime 0.3.2 (27.08.2024)
 
 ## Bug fixes

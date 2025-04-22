@@ -104,11 +104,13 @@ remove_problems <- function(x, systemInfo = NULL,
     x <- list(actions = x,
               systemInfo = systemInfo)
   } else {
-    stopifnot(is.list(x), length(x) == 3,
+    stopifnot(is.list(x), length(x) >= 3,
               all(c("systemInfo", "inputPositions", "actions") %in% names(x)))
     stopifnot(is.data.frame(x$systemInfo),
               is.data.frame(x$inputPositions),
               is.data.frame(x$actions))
+    otherElementsNames <- setdiff(names(x),
+                                  c("systemInfo", "inputPositions", "actions"))
     respIdColumns <- names(select(x$systemInfo, {{respId}}))
     screenIdColumns <- names(select(x$systemInfo, {{screenId}}))
     entryIdColumns <- names(select(x$systemInfo, {{entryId}}))
@@ -188,7 +190,7 @@ remove_problems <- function(x, systemInfo = NULL,
               title = paste0("There are ", format(nMissing, big.mark = "'"),
                              " records (respondent-screen",
                              ifelse(entries, "-entrie", ""),
-                             "s) in the data identyfing problems thatdo not match the data regarding actions (events).\n",
+                             "s) in the data identyfing problems that do not match the data regarding actions (events).\n",
                              "This may be due to respondents quiting the survey just at the beginning of a given screen, but it is also possible that the data regarding actions has been somehow filtered out already. Anyway you may remove them, because no indices can be computed for such respondent-screens.\n\n",
                              "What do you want to do with these respondent-screen",
                              ifelse(entries, "-entrie", ""), "s?"))
@@ -307,6 +309,11 @@ remove_problems <- function(x, systemInfo = NULL,
   if (!is.null(systemInfo)) {
     return(x$actions)
   } else {
+    if (length(x) > 3) {
+      warning("No data have been removed from the element(s): '",
+              paste(otherElementsNames, collapse = "', '"),
+              "' of the input list.")
+    }
     return(x)
   }
 }
