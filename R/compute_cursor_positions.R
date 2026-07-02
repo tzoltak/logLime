@@ -26,8 +26,7 @@
 #'                    input data.}
 #' }
 #' @seealso [compute_relative_positions], [separate_logdata_types]
-#' @importFrom dplyr %>% .data across all_of any_of distinct filter first
-#' group_by last mutate reframe select slice_tail
+#' @importFrom dplyr %>% .data across all_of any_of distinct filter first group_by last mutate reframe select slice_tail
 #' @importFrom tidyr fill
 #' @export
 compute_cursor_positions <- function(actions,

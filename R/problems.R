@@ -82,8 +82,7 @@ find_problems <- function(actions, systemInfo, respId, screenId, entryId) {
 #' @return Input data (either a data frame or a list of three data frames)
 #' possibly with some rows removed.
 #' @seealso [separate_logdata_types], [separate_returns], [separate_stagnations]
-#' @importFrom dplyr %>% anti_join everything filter n n_distinct pick select
-#' semi_join
+#' @importFrom dplyr %>% anti_join everything filter n n_distinct pick select semi_join
 #' @importFrom utils menu
 #' @export
 remove_problems <- function(x, systemInfo = NULL,

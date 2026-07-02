@@ -30,9 +30,7 @@
 #'   \item{hoverTime}{Total time spent by cursor over the element in seconds.}
 #' }
 #' @seealso [separate_logdata_types]
-#' @importFrom dplyr %>% .data across all_of any_of bind_rows distinct
-#' everything filter group_by last mutate pick reframe select slice_tail
-#' summarise
+#' @importFrom dplyr %>% .data across all_of any_of bind_rows distinct everything filter group_by last mutate pick reframe select slice_tail summarise
 #' @importFrom utils txtProgressBar getTxtProgressBar setTxtProgressBar
 #' @export
 compute_hovering <- function(actions,

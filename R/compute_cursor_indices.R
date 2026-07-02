@@ -57,8 +57,7 @@
 #' will be appended to column names (separated by "_"), with each column
 #' reporting the values of a given index for a given screen (or screen-*entry*).
 #' @seealso [separate_logdata_types], [compute_relative_positions]
-#' @importFrom dplyr %>% .data across all_of any_of filter group_by lag
-#' left_join mutate rename_with summarise
+#' @importFrom dplyr %>% .data across all_of any_of filter group_by lag left_join mutate rename_with summarise
 #' @importFrom stats weighted.mean
 #' @export
 compute_cursor_indices <- function(actions,
@@ -150,12 +149,12 @@ compute_cursor_indices <- function(actions,
     summarise(across(any_of(c("dX", "dX_sc", "dX_rel", "dX_screl",
                               "dY", "dY_sc", "dY_rel", "dY_screl",
                               "flipsX", "flipsX_sc", "flipsY", "flipsY_sc")),
-                     sum, na.rm = TRUE),
+                     ~sum(., na.rm = TRUE)),
               across(any_of(c("vX", "aX", "vX_sc", "aX_sc",
                               "vY", "aY", "vY_sc", "aY_sc",
                               "vX_rel", "aX_rel", "vX_screl", "aX_screl",
                               "vY_rel", "aY_rel", "vY_screl", "aY_screl")),
-                     weighted.mean, w = .data$duration, na.rm = TRUE),
+                     ~weighted.mean(., w = .data$duration, na.rm = TRUE)),
               .groups = "drop")
 
   if (returnFormat == "wide") {

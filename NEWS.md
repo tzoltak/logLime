@@ -1,3 +1,9 @@
+# logLime 0.3.4 (2.07.2026)
+
+## Bug fixes
+
+-   Changed the way of providing additional arguments to summarizing functions while calling *dplyr*'s `across()` within `compute_cursor_indices()`, so it is in line with the changes of the API that were introduced in the *dplyr* 1.1.0.
+
 # logLime 0.3.3 (18.04.2025)
 
 ## Bug fixes

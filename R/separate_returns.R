@@ -36,8 +36,7 @@
 #' }
 #' By default the function uses both approaches described above. The second one
 #' may be turned off by giving `screenReturnThreshold = Inf`.
-#' @importFrom dplyr .data %>% across arrange filter group_by lag mutate pull
-#' select summarise
+#' @importFrom dplyr .data %>% across arrange filter group_by lag mutate pull select summarise
 separate_returns <- function(logData, respId, screenId,
                              screenReturnThreshold = 1000) {
   if (!all(c("pageLoaded", "submit") %in% logData$type)) {

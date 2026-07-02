@@ -55,8 +55,7 @@
 #'                      [find_problems]}
 #' }
 #' @seealso [find_problems], [separate_logdata_types]
-#' @importFrom dplyr %>% .data across filter group_by left_join n n_distinct
-#' select summarise ungroup
+#' @importFrom dplyr %>% .data across filter group_by left_join n n_distinct select summarise ungroup
 preprocess_system_info <- function(logData, inputPositions, respId, screenId,
                                    inputsBoxCells) {
   logData <- logData %>%

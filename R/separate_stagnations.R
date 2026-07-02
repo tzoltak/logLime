@@ -24,8 +24,7 @@
 #' @return A data frame with the same columns as input but (probably) with some
 #' additional rows of type *mousemove*.
 #' @seealso [separate_logdata_types], [compute_cursor_indices]
-#' @importFrom dplyr %>% .data across all_of any_of arrange bind_rows mutate
-#' select
+#' @importFrom dplyr %>% .data across all_of any_of arrange bind_rows mutate select
 #' @export
 separate_stagnations <- function(actions, threshold) {
   stopifnot(is.data.frame(actions),

@@ -57,8 +57,7 @@
 #' [separate_returns], [preprocess_input_positions], [preprocess_system_info],
 #' [preprocess_actions], [find_problems], [separate_stagnations]
 #' @importFrom tidyr pivot_longer
-#' @importFrom dplyr %>% .data across all_of any_of distinct filter first
-#' group_by last left_join mutate select ungroup
+#' @importFrom dplyr %>% .data across all_of any_of distinct filter first group_by last left_join mutate select ungroup
 #' @export
 separate_logdata_types <-
   function(logData, surveyStructure = NULL,

@@ -73,8 +73,7 @@
 #'   \item{answerCode}{Answer code.}
 #' }
 #' @seealso [separate_logdata_types] [separate_returns] [read_survey_structure]
-#' @importFrom dplyr %>% .data arrange bind_rows case_when everything
-#' filter group_by if_else lag lead mutate n pick reframe ungroup
+#' @importFrom dplyr %>% .data arrange bind_rows case_when everything filter group_by if_else lag lead mutate n pick reframe ungroup
 preprocess_actions <- function(logData, respId, screenId,
                                surveyStructure = NULL) {
   # there will be probably some warnings in conversion to numerics because of

@@ -23,8 +23,7 @@
 #' @seealso [separate_logdata_types], [separate_returns],
 #' [preprocess_input_positions], [preprocess_actions]
 #' @importFrom utils read.delim
-#' @importFrom dplyr %>% .data all_of bind_rows filter left_join mutate
-#' select summarise
+#' @importFrom dplyr %>% .data all_of bind_rows filter left_join mutate select summarise
 #' @importFrom tidyr expand_grid
 read_survey_structure <- function(x) {
   if (is.character(x)) {

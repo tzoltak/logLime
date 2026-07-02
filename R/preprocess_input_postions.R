@@ -75,8 +75,7 @@
 #' @seealso [compute_relative_input_positions], [preprocess_system_info],
 #' [separate_logdata_types]
 #' @importFrom stats median
-#' @importFrom dplyr %>% .data all_of anti_join filter inner_join lag lead
-#' mutate n select
+#' @importFrom dplyr %>% .data all_of anti_join filter inner_join lag lead mutate n select
 preprocess_input_positions <- function(logData, respId, screenId,
                                        surveyStructure = NULL,
                                        imputeLastPageXY = median) {

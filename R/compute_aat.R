@@ -87,9 +87,7 @@
 #'                       `screenId`.}
 #' }
 #' @seealso [separate_logdata_types], [separate_returns]
-#' @importFrom dplyr %>% .data across all_of any_of bind_rows distinct filter
-#' group_by left_join mutate n_distinct rename select
-#' slice slice_tail summarise starts_with ungroup
+#' @importFrom dplyr %>% .data across all_of any_of bind_rows distinct filter group_by left_join mutate n_distinct rename select slice slice_tail summarise starts_with ungroup
 #' @importFrom tidyr pivot_wider
 #' @export
 compute_aat <- function(actions,
